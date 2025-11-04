@@ -1,0 +1,19 @@
+{
+  "operations": {
+    "Tương giao": { "code": "qT2", "requires_two_shapes": true },
+    "Khoảng cách": { "code": "qT3", "requires_two_shapes": true },
+    "Diện tích": { "code": "qT4", "requires_two_shapes": false },
+    "Thể tích": { "code": "qT5", "requires_two_shapes": false },
+    "PT đường thẳng": { "code": "qT6", "requires_two_shapes": true }
+  },
+  "operation_specific_tcodes": {
+    "Diện tích": {
+      "group_a": { "Đường tròn": "T1", "Mặt cầu": "T4" },
+      "group_b": { "Đường tròn": "T2", "Mặt cầu": "T5" }
+    },
+    "Thể tích": {
+      "group_a": { "Mặt cầu": "T7" },
+      "group_b": { "Mặt cầu": "T8" }
+    }
+  }
+}
