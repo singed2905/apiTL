@@ -1,0 +1,20 @@
+{
+  "latex_to_calculator_mappings": [
+    { "find": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}", "replace": "\\1a\\2", "type": "regex", "description": "Fraction conversion" },
+    { "find": "\\\\?sqrt\\(([^()]+)\\)", "replace": "s\\1)", "type": "regex", "description": "Sqrt with parentheses" },
+    { "find": "\\\\sqrt\\{", "replace": "s", "type": "regex", "description": "Sqrt with braces (latex)" },
+    { "find": "sqrt\\{", "replace": "s", "type": "regex", "description": "Sqrt with braces (ascii)" },
+    { "find": "\\\\sin\\(", "replace": "j(", "type": "regex" },
+    { "find": "sin\\(", "replace": "j(", "type": "regex" },
+    { "find": "\\\\cos\\(", "replace": "k(", "type": "regex" },
+    { "find": "cos\\(", "replace": "k(", "type": "regex" },
+    { "find": "\\\\tan\\(", "replace": "l(", "type": "regex" },
+    { "find": "tan\\(", "replace": "l(", "type": "regex" },
+    { "find": "\\\\ln\\(", "replace": "h(", "type": "regex" },
+    { "find": "ln\\(", "replace": "h(", "type": "regex" },
+    { "find": "\\\\}", "replace": ")", "type": "regex" },
+    { "find": "\\\\{", "replace": "(", "type": "regex" },
+    { "find": "\\\\\\^", "replace": "^", "type": "regex" },
+    { "find": "_", "replace": "_", "type": "literal" }
+  ]
+}
