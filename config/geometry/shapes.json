@@ -1,0 +1,46 @@
+{
+  "shapes": {
+    "Điểm": {
+      "code_A": "T1",
+      "code_B": "T2",
+      "shape_code_A": { "2": "112", "3": "113" },
+      "shape_code_B": { "2": "qT11T122", "3": "qT11T123" },
+      "params": { "2": 2, "3": 3 }
+    },
+    "Đường thẳng": {
+      "code_A": "T4",
+      "code_B": "T5",
+      "shape_code_A": "21",
+      "shape_code_B": "qT12T12",
+      "params": 6
+    },
+    "Mặt phẳng": {
+      "code_A": "T7",
+      "code_B": "T8",
+      "shape_code_A": "31",
+      "shape_code_B": "qT13T12",
+      "params": 4
+    },
+    "Đường tròn": {
+      "code_A": "Tz",
+      "code_B": "Tx",
+      "shape_code_A": "41",
+      "shape_code_B": "qT14T12",
+      "params": 3
+    },
+    "Mặt cầu": {
+      "code_A": "Tj",
+      "code_B": "Tk",
+      "shape_code_A": "51",
+      "shape_code_B": "qT15T12",
+      "params": 4
+    }
+  },
+  "operation_filters": {
+    "Khoảng cách": ["Điểm", "Đường thẳng", "Mặt phẳng"],
+    "Diện tích": ["Đường tròn", "Mặt cầu"],
+    "Thể tích": ["Mặt cầu"],
+    "PT đường thẳng": ["Điểm"],
+    "Tương giao": ["Điểm", "Đường thẳng", "Mặt phẳng", "Đường tròn", "Mặt cầu"]
+  }
+}
