@@ -1,0 +1,15 @@
+{
+  "default_version": "fx799",
+  "geometry": {
+    "mappings_file": "config/geometry/mappings.json",
+    "operation_tcodes_file": "config/geometry/operation_tcodes.json",
+    "shapes_file": "config/geometry/shapes.json"
+  },
+  "versions_path": "config/versions",
+  "encoding": {
+    "trim_spaces": true,
+    "support_sqrt_paren": true,
+    "support_sqrt_brace": true,
+    "max_regex_iterations": 20
+  }
+}
