@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConvertKeylogApp Geometry API - Web Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .form-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .result-item h4 {
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .keylog {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            word-break: break-all;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .shape-inputs {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .shape-inputs.active {
+            display: block;
+        }
+
+        .examples-section {
+            grid-column: 1 / -1;
+            background: #e8f5e8;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .example-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .example-btn:hover {
+            background: #138496;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 ConvertKeylogApp Geometry API</h1>
+            <p>Web Demo - Chuyển đổi bài toán hình học thành keylog máy tính Casio</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Form -->
+            <div class="form-section">
+                <h3>📝 Nhập dữ liệu</h3>
+                
+                <div class="form-group">
+                    <label for="operation">Phép toán:</label>
+                    <select id="operation" onchange="updateShapeOptions()">
+                        <option value="">Chọn phép toán...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="shapeA">Hình A:</label>
+                    <select id="shapeA" onchange="updateInputFields()">
+                        <option value="">Chọn hình A...</option>
+                    </select>
+                </div>
+
+                <div id="inputsA" class="shape-inputs">
+                    <!-- Dynamic inputs for shape A -->
+                </div>
+
+                <div class="form-group">
+                    <label for="shapeB">Hình B (tùy chọn):</label>
+                    <select id="shapeB" onchange="updateInputFields()">
+                        <option value="">Không có</option>
+                    </select>
+                </div>
+
+                <div id="inputsB" class="shape-inputs">
+                    <!-- Dynamic inputs for shape B -->
+                </div>
+
+                <div class="form-group">
+                    <label for="version">Phiên bản máy tính:</label>
+                    <select id="version">
+                        <option value="fx799">Casio fx-799</option>
+                        <option value="fx800">Casio fx-800</option>
+                        <option value="fx801">Casio fx-801</option>
+                        <option value="fx802">Casio fx-802</option>
+                        <option value="fx803">Casio fx-803</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="processGeometry()" id="processBtn">
+                    🚀 Tính toán
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div class="results-section">
+                <h3>📊 Kết quả</h3>
+                <div id="results">
+                    <div class="loading">Nhập dữ liệu và nhấn "Tính toán" để xem kết quả...</div>
+                </div>
+            </div>
+
+            <!-- Examples -->
+            <div class="examples-section">
+                <h3>💡 Ví dụ nhanh</h3>
+                <p style="margin-bottom: 15px;">Nhấn vào một ví dụ để tự động điền dữ liệu:</p>
+                
+                <button class="example-btn" onclick="loadExample('distance_points')">
+                    Khoảng cách 2 điểm
+                </button>
+                <button class="example-btn" onclick="loadExample('circle_area')">
+                    Diện tích đường tròn
+                </button>
+                <button class="example-btn" onclick="loadExample('sphere_volume')">
+                    Thể tích mặt cầu
+                </button>
+                <button class="example-btn" onclick="loadExample('line_plane_intersection')">
+                    Giao tuyến đường thẳng - mặt phẳng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        let availableShapes = [];
+        let availableOperations = [];
+
+        // Initialize the app
+        async function initApp() {
+            try {
+                // Load shapes and operations
+                const [shapesRes, operationsRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/geometry/shapes`),
+                    fetch(`${API_BASE}/api/geometry/operations`)
+                ]);
+
+                const shapesData = await shapesRes.json();
+                const operationsData = await operationsRes.json();
+
+                availableShapes = shapesData.data;
+                availableOperations = operationsData.data;
+
+                populateOperations();
+                populateShapes();
+            } catch (error) {
+                showError('Không thể kết nối đến API. Vui lòng kiểm tra server đã chạy chưa.');
+                console.error('Init error:', error);
+            }
+        }
+
+        function populateOperations() {
+            const select = document.getElementById('operation');
+            select.innerHTML = '<option value="">Chọn phép toán...</option>';
+            
+            availableOperations.forEach(op => {
+                const option = document.createElement('option');
+                option.value = op;
+                option.textContent = op;
+                select.appendChild(option);
+            });
+        }
+
+        function populateShapes() {
+            const selectA = document.getElementById('shapeA');
+            const selectB = document.getElementById('shapeB');
+            
+            selectA.innerHTML = '<option value="">Chọn hình A...</option>';
+            selectB.innerHTML = '<option value="">Không có</option>';
+            
+            availableShapes.forEach(shape => {
+                const optionA = document.createElement('option');
+                optionA.value = shape;
+                optionA.textContent = shape;
+                selectA.appendChild(optionA);
+                
+                const optionB = document.createElement('option');
+                optionB.value = shape;
+                optionB.textContent = shape;
+                selectB.appendChild(optionB);
+            });
+        }
+
+        async function updateShapeOptions() {
+            const operation = document.getElementById('operation').value;
+            if (!operation) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/geometry/operations/${encodeURIComponent(operation)}/shapes`);
+                const data = await response.json();
+                
+                const selectA = document.getElementById('shapeA');
+                const selectB = document.getElementById('shapeB');
+                
+                // Update shape A options
+                selectA.innerHTML = '<option value="">Chọn hình A...</option>';
+                data.data.forEach(shape => {
+                    const option = document.createElement('option');
+                    option.value = shape;
+                    option.textContent = shape;
+                    selectA.appendChild(option);
+                });
+                
+                // Update shape B options
+                selectB.innerHTML = '<option value="">Không có</option>';
+                if (!['Diện tích', 'Thể tích'].includes(operation)) {
+                    data.data.forEach(shape => {
+                        const option = document.createElement('option');
+                        option.value = shape;
+                        option.textContent = shape;
+                        selectB.appendChild(option);
+                    });
+                }
+                
+                updateInputFields();
+            } catch (error) {
+                console.error('Error updating shapes:', error);
+            }
+        }
+
+        function updateInputFields() {
+            const shapeA = document.getElementById('shapeA').value;
+            const shapeB = document.getElementById('shapeB').value;
+            
+            updateShapeInputs('A', shapeA);
+            updateShapeInputs('B', shapeB);
+        }
+
+        function updateShapeInputs(group, shape) {
+            const container = document.getElementById(`inputs${group}`);
+            container.innerHTML = '';
+            
+            if (!shape) {
+                container.classList.remove('active');
+                return;
+            }
+            
+            container.classList.add('active');
+            
+            switch (shape) {
+                case 'Điểm':
+                    container.innerHTML = `
+                        <label>Tọa độ (x,y,z):</label>
+                        <input type="text" id="point_input_${group}" placeholder="Ví dụ: 1,2,3">
+                    `;
+                    break;
+                    
+                case 'Đường thẳng':
+                    container.innerHTML = `
+                        <label>Điểm trên đường thẳng (x,y,z):</label>
+                        <input type="text" id="line_A${group === 'A' ? '1' : '2'}_${group}" placeholder="Ví dụ: 0,0,0">
+                        <label style="margin-top: 10px;">Vector chỉ phương (dx,dy,dz):</label>
+                        <input type="text" id="line_X${group === 'A' ? '1' : '2'}_${group}" placeholder="Ví dụ: 1,1,1">
+                    `;
+                    break;
+                    
+                case 'Mặt phẳng':
+                    container.innerHTML = `
+                        <label>Hệ số a:</label>
+                        <input type="text" id="plane_a_${group}" placeholder="Ví dụ: 1">
+                        <label>Hệ số b:</label>
+                        <input type="text" id="plane_b_${group}" placeholder="Ví dụ: 1">
+                        <label>Hệ số c:</label>
+                        <input type="text" id="plane_c_${group}" placeholder="Ví dụ: 1">
+                        <label>Hằng số d:</label>
+                        <input type="text" id="plane_d_${group}" placeholder="Ví dụ: 0">
+                    `;
+                    break;
+                    
+                case 'Đường tròn':
+                    container.innerHTML = `
+                        <label>Tâm đường tròn (x,y):</label>
+                        <input type="text" id="circle_center_${group}" placeholder="Ví dụ: 0,0">
+                        <label style="margin-top: 10px;">Bán kính:</label>
+                        <input type="text" id="circle_radius_${group}" placeholder="Ví dụ: 5">
+                    `;
+                    break;
+                    
+                case 'Mặt cầu':
+                    container.innerHTML = `
+                        <label>Tâm mặt cầu (x,y,z):</label>
+                        <input type="text" id="sphere_center_${group}" placeholder="Ví dụ: 0,0,0">
+                        <label style="margin-top: 10px;">Bán kính:</label>
+                        <input type="text" id="sphere_radius_${group}" placeholder="Ví dụ: 3">
+                    `;
+                    break;
+            }
+        }
+
+        function collectInputData(group, shape) {
+            const data = {};
+            
+            switch (shape) {
+                case 'Điểm':
+                    const pointInput = document.getElementById(`point_input_${group}`);
+                    if (pointInput) data.point_input = pointInput.value;
+                    break;
+                    
+                case 'Đường thẳng':
+                    const lineA = document.getElementById(`line_A${group === 'A' ? '1' : '2'}_${group}`);
+                    const lineX = document.getElementById(`line_X${group === 'A' ? '1' : '2'}_${group}`);
+                    if (lineA) data[`line_A${group === 'A' ? '1' : '2'}`] = lineA.value;
+                    if (lineX) data[`line_X${group === 'A' ? '1' : '2'}`] = lineX.value;
+                    break;
+                    
+                case 'Mặt phẳng':
+                    ['a', 'b', 'c', 'd'].forEach(coeff => {
+                        const input = document.getElementById(`plane_${coeff}_${group}`);
+                        if (input) data[`plane_${coeff}`] = input.value;
+                    });
+                    break;
+                    
+                case 'Đường tròn':
+                    const circleCenter = document.getElementById(`circle_center_${group}`);
+                    const circleRadius = document.getElementById(`circle_radius_${group}`);
+                    if (circleCenter) data.circle_center = circleCenter.value;
+                    if (circleRadius) data.circle_radius = circleRadius.value;
+                    break;
+                    
+                case 'Mặt cầu':
+                    const sphereCenter = document.getElementById(`sphere_center_${group}`);
+                    const sphereRadius = document.getElementById(`sphere_radius_${group}`);
+                    if (sphereCenter) data.sphere_center = sphereCenter.value;
+                    if (sphereRadius) data.sphere_radius = sphereRadius.value;
+                    break;
+            }
+            
+            return data;
+        }
+
+        async function processGeometry() {
+            const operation = document.getElementById('operation').value;
+            const shapeA = document.getElementById('shapeA').value;
+            const shapeB = document.getElementById('shapeB').value;
+            const version = document.getElementById('version').value;
+            
+            if (!operation || !shapeA) {
+                showError('Vui lòng chọn phép toán và hình A.');
+                return;
+            }
+            
+            const dataA = collectInputData('A', shapeA);
+            const dataB = shapeB ? collectInputData('B', shapeB) : {};
+            
+            const requestData = {
+                operation,
+                shape_A: shapeA,
+                data_A: dataA,
+                version
+            };
+            
+            if (shapeB) {
+                requestData.shape_B = shapeB;
+                requestData.data_B = dataB;
+            }
+            
+            // Show loading
+            document.getElementById('results').innerHTML = '<div class="loading">🔄 Đang xử lý...</div>';
+            document.getElementById('processBtn').disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/geometry/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayResults(result.data);
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                showError('Lỗi kết nối đến API: ' + error.message);
+                console.error('Processing error:', error);
+            } finally {
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('results');
+            
+            const keylogHtml = `
+                <div class="result-item">
+                    <h4>🔑 Keylog (${data.version}):</h4>
+                    <div class="keylog">
+                        ${data.keylog}
+                        <button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button>
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <h4>📝 Thông tin:</h4>
+                    <p><strong>Phép toán:</strong> ${data.operation}</p>
+                    <p><strong>Hình A:</strong> ${data.shape_A}</p>
+                    ${data.shape_B ? `<p><strong>Hình B:</strong> ${data.shape_B}</p>` : ''}
+                    <p><strong>Mã hóa A:</strong> [${data.encoded_A.join(', ')}]</p>
+                    ${data.encoded_B && data.encoded_B.length > 0 ? `<p><strong>Mã hóa B:</strong> [${data.encoded_B.join(', ')}]</p>` : ''}
+                </div>
+                
+                <div class="success">
+                    ✅ Xử lý thành công! Sao chép keylog và nhập vào máy tính Casio.
+                </div>
+            `;
+            
+            resultsContainer.innerHTML = keylogHtml;
+        }
+
+        function showError(message) {
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#27ae60';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#3498db';
+                }, 1500);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                alert('Không thể copy. Vui lòng copy thủ công.');
+            });
+        }
+
+        // Example data
+        const examples = {
+            distance_points: {
+                operation: 'Khoảng cách',
+                shapeA: 'Điểm',
+                shapeB: 'Điểm',
+                dataA: { point_input: '1,2,3' },
+                dataB: { point_input: '4,5,6' }
+            },
+            circle_area: {
+                operation: 'Diện tích',
+                shapeA: 'Đường tròn',
+                dataA: { circle_center: '0,0', circle_radius: 'sqrt(5)' }
+            },
+            sphere_volume: {
+                operation: 'Thể tích',
+                shapeA: 'Mặt cầu',
+                dataA: { sphere_center: '0,0,0', sphere_radius: '3' }
+            },
+            line_plane_intersection: {
+                operation: 'Tương giao',
+                shapeA: 'Đường thẳng',
+                shapeB: 'Mặt phẳng',
+                dataA: { line_A1: '0,0,0', line_X1: '1,1,1' },
+                dataB: { plane_a: '1', plane_b: '1', plane_c: '1', plane_d: '0' }
+            }
+        };
+
+        function loadExample(exampleKey) {
+            const example = examples[exampleKey];
+            if (!example) return;
+
+            // Set operation
+            document.getElementById('operation').value = example.operation;
+            updateShapeOptions().then(() => {
+                // Set shapes
+                document.getElementById('shapeA').value = example.shapeA;
+                if (example.shapeB) {
+                    document.getElementById('shapeB').value = example.shapeB;
+                }
+                
+                updateInputFields();
+                
+                // Wait a bit for inputs to be created, then populate
+                setTimeout(() => {
+                    // Populate data A
+                    Object.entries(example.dataA).forEach(([key, value]) => {
+                        const input = document.getElementById(`${key}_A`);
+                        if (input) input.value = value;
+                    });
+                    
+                    // Populate data B if exists
+                    if (example.dataB) {
+                        Object.entries(example.dataB).forEach(([key, value]) => {
+                            const input = document.getElementById(`${key}_B`);
+                            if (input) input.value = value;
+                        });
+                    }
+                }, 100);
+            });
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>
