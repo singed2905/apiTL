@@ -1,0 +1,118 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: ConvertKeylogApp API
+    version: 2.2.0
+  
+  # JSON configuration
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+  
+  # Actuator endpoints
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,env
+    endpoint:
+      health:
+        show-details: when-authorized
+
+# Logging configuration
+logging:
+  level:
+    com.singed2905.apitl: DEBUG
+    org.springframework.web: INFO
+    org.apache.commons.math3: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/api-tl.log
+
+# API Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  info:
+    title: ConvertKeylogApp API
+    description: |
+      RESTful API for converting mathematical expressions to Casio calculator keylog format.
+      
+      ## Supported Modes:
+      - **Equation Mode**: Linear equation systems (2×2, 3×3, 4×4)
+      - **Polynomial Mode**: Polynomial equations (degree 2, 3, 4) 
+      - **Geometry Mode**: 2D/3D geometry calculations
+      - **Vector Mode**: Vector operations
+      
+      ## Calculator Support:
+      Multiple Casio calculator versions with different keylog formats.
+      
+      Based on ConvertKeylogApp v2.2 Python desktop application.
+    version: 2.2.0
+    contact:
+      name: singed2905
+      url: https://github.com/singed2905/apiTL
+    license:
+      name: MIT License
+      url: https://opensource.org/licenses/MIT
+
+# Application specific configuration
+app:
+  calculator:
+    # Supported calculator versions
+    supported-versions:
+      - fx799
+      - fx800  
+      - fx801
+      - fx802
+      - fx803
+      - fx991
+      - fx570
+      - fx580
+      - fx115
+    
+    # Default version if not specified
+    default-version: fx799
+  
+  # Math processing settings
+  math:
+    precision: 6
+    use-scientific-notation: false
+    complex-number-format: "a + bi"
+  
+  # Performance settings  
+  performance:
+    batch-size-limit: 100
+    timeout-seconds: 30
+    enable-caching: true
+
+# CORS configuration
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:8080
+    - https://singed2905.github.io
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - "*"
+  allow-credentials: true
+  max-age: 3600
