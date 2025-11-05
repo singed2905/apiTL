@@ -79,7 +79,7 @@
             </div>
             <div id="inputsA" class="shape-inputs"></div>
             <div class="form-group">
-                <label for="shapeB">Hình B (tùy chọn):</label>
+                <label for="shapeB">Hình B (tù chọn):</label>
                 <select id="shapeB" onchange="updateInputFields()">
                     <option value="">Không có</option>
                 </select>
@@ -120,7 +120,7 @@
                 <div class="upload-zone" onclick="document.getElementById('excelFile').click()">
                     <div class="upload-icon">📁</div>
                     <p>Chọn file Excel để đọc trực tiếp trên trình duyệt</p>
-                    <small>FE sẽ parse & validate, BE chỉ xử lý JSON</small>
+                    <small>FE parse & validate, BE chỉ xử lý JSON</small>
                 </div>
             </div>
             <div id="fileInfo" class="file-info" style="display: none;">
@@ -157,129 +157,69 @@
 </div>
 
 <script>
-    const API_BASE = 'http://localhost:5000';
-    let availableShapes = [];
-    let availableOperations = [];
-    let excelJsonData = [];
+    const API_BASE='http://localhost:5000';
+    let availableShapes=[]; let availableOperations=[]; let excelJsonData=[];
 
-    const SHAPE_TEMPLATES = {
-        'Điểm': { required_columns: ['point_input'], alternative_columns: [['x','y'], ['x','y','z']], description: 'Cần point_input hoặc x,y(,z)' },
-        'Đường thẳng': { required_columns: ['line_A1','line_X1'], alternative_columns: [['line_point','line_vector']], description: 'Cần điểm và vector' },
-        'Mặt phẳng': { required_columns: ['plane_a','plane_b','plane_c','plane_d'], description: 'Cần 4 hệ số a,b,c,d' },
-        'Đường tròn': { required_columns: ['circle_center','circle_radius'], alternative_columns: [['center_x','center_y','radius']], description: 'Cần tâm và bán kính' },
-        'Mặt cầu': { required_columns: ['sphere_center','sphere_radius'], alternative_columns: [['center_x','center_y','center_z','radius']], description: 'Cần tâm và bán kính' }
+    // Mapping theo clone
+    const COLUMN_ALIASES={
+        plane:{ A:['plane_a','P1_a'], B:['plane_a','P2_a'] },
+        planeb:{ A:['plane_b','P1_b'], B:['plane_b','P2_b'] },
+        planec:{ A:['plane_c','P1_c'], B:['plane_c','P2_c'] },
+        planed:{ A:['plane_d','P1_d'], B:['plane_d','P2_d'] },
+        line_point:{ A:['line_A1','d_P_data_A','P1_P'], B:['line_A2','d_P_data_B','P2_P'] },
+        line_vec:{ A:['line_X1','d_V_data_A','P1_V'], B:['line_X2','d_V_data_B','P2_V'] },
+        point:{ A:['point_input','data_A','P1'], B:['point_input','data_B','P2'] },
+        circle_center:{ A:['circle_center','c_center_A','C1_center'], B:['circle_center','c_center_B','C2_center'] },
+        circle_radius:{ A:['circle_radius','c_radius_A','C1_radius'], B:['circle_radius','c_radius_B','C2_radius'] },
+        sphere_center:{ A:['sphere_center','s_center_A','S1_center'], B:['sphere_center','s_center_B','S2_center'] },
+        sphere_radius:{ A:['sphere_radius','s_radius_A','S1_radius'], B:['sphere_radius','s_radius_B','S2_radius'] }
     };
 
-    async function initApp() {
-        try {
-            const [shapesRes, operationsRes] = await Promise.all([
-                fetch(`${API_BASE}/api/geometry/shapes`),
-                fetch(`${API_BASE}/api/geometry/operations`)
-            ]);
-            const shapesData = await shapesRes.json();
-            const operationsData = await operationsRes.json();
-            availableShapes = shapesData.data || [];
-            availableOperations = operationsData.data || [];
-            populateOperations();
-            populateShapes();
-        } catch (error) { showError('Không thể kết nối đến API.'); }
-    }
+    const SHAPE_TEMPLATES={
+        'Điểm':{ required:['point'] },
+        'Đường thẳng':{ required:['line_point','line_vec'] },
+        'Mặt phẳng':{ required:['plane','planeb','planec','planed'] },
+        'Đường tròn':{ required:['circle_center','circle_radius'] },
+        'Mặt cầu':{ required:['sphere_center','sphere_radius'] }
+    };
 
-    function populateOperations() {
-        const select = document.getElementById('operation');
-        select.innerHTML = '<option value="">Chọn phép toán...</option>';
-        availableOperations.forEach(op => { const o=document.createElement('option'); o.value=op; o.textContent=op; select.appendChild(o); });
-    }
+    async function initApp(){ try{ const [s,o]=await Promise.all([fetch(`${API_BASE}/api/geometry/shapes`), fetch(`${API_BASE}/api/geometry/operations`)]); const sd=await s.json(); const od=await o.json(); availableShapes=sd.data||[]; availableOperations=od.data||[]; populateOperations(); populateShapes(); }catch(e){ showError('Không thể kết nối đến API.'); } }
 
-    function populateShapes() {
-        const selectA=document.getElementById('shapeA'); const selectB=document.getElementById('shapeB');
-        selectA.innerHTML='<option value="">Chọn hình A...</option>'; selectB.innerHTML='<option value="">Không có</option>';
-        availableShapes.forEach(s=>{ const a=document.createElement('option'); a.value=s; a.textContent=s; selectA.appendChild(a); const b=document.createElement('option'); b.value=s; b.textContent=s; selectB.appendChild(b); });
-    }
+    function populateOperations(){ const sel=document.getElementById('operation'); sel.innerHTML='<option value="">Chọn phép toán...</option>'; availableOperations.forEach(op=>{ const opt=document.createElement('option'); opt.value=op; opt.textContent=op; sel.appendChild(opt); }); }
+    function populateShapes(){ const a=document.getElementById('shapeA'), b=document.getElementById('shapeB'); a.innerHTML='<option value="">Chọn hình A...</option>'; b.innerHTML='<option value="">Không có</option>'; availableShapes.forEach(s=>{ const oa=document.createElement('option'); oa.value=s; oa.textContent=s; a.appendChild(oa); const ob=document.createElement('option'); ob.value=s; ob.textContent=s; b.appendChild(ob); }); }
 
-    async function updateShapeOptions() {
-        const operation=document.getElementById('operation').value; if(!operation) return;
-        const res=await fetch(`${API_BASE}/api/geometry/operations/${encodeURIComponent(operation)}/shapes`);
-        const data=await res.json();
-        const selectA=document.getElementById('shapeA'); const selectB=document.getElementById('shapeB');
-        selectA.innerHTML='<option value="">Chọn hình A...</option>';
-        (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; selectA.appendChild(o); });
-        selectB.innerHTML='<option value="">Không có</option>';
-        if(!['Diện tích','Thể tích'].includes(operation)) { (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; selectB.appendChild(o); }); }
-        updateInputFields();
-    }
+    async function updateShapeOptions(){ const op=document.getElementById('operation').value; if(!op) return; const res=await fetch(`${API_BASE}/api/geometry/operations/${encodeURIComponent(op)}/shapes`); const data=await res.json(); const a=document.getElementById('shapeA'), b=document.getElementById('shapeB'); a.innerHTML='<option value="">Chọn hình A...</option>'; (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; a.appendChild(o); }); b.innerHTML='<option value="">Không có</option>'; if(!['Diện tích','Thể tích'].includes(op)){ (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; b.appendChild(o); }); } updateInputFields(); }
 
-    function updateInputFields() { const a=document.getElementById('shapeA').value; const b=document.getElementById('shapeB').value; updateShapeInputs('A',a); updateShapeInputs('B',b); }
+    function updateInputFields(){ const a=document.getElementById('shapeA').value; const b=document.getElementById('shapeB').value; updateShapeInputs('A',a); updateShapeInputs('B',b); }
 
-    function updateShapeInputs(group, shape) {
-        const c=document.getElementById(`inputs${group}`); c.innerHTML=''; if(!shape){c.classList.remove('active');return;} c.classList.add('active');
-        if(shape==='Điểm'){ c.innerHTML=`<label>Tọa độ (x,y,z):</label><input type="text" id="point_input_${group}" placeholder="Ví dụ: 1,2,3">`; }
-        else if(shape==='Đường thẳng'){ c.innerHTML=`<label>Điểm trên đường thẳng (x,y,z):</label><input type="text" id="line_A${group==='A'?'1':'2'}_${group}" placeholder="Ví dụ: 0,0,0"><label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label><input type="text" id="line_X${group==='A'?'1':'2'}_${group}" placeholder="Ví dụ: 1,1,1">`; }
-        else if(shape==='Mặt phẳng'){ c.innerHTML=`<label>Hệ số a:</label><input type="text" id="plane_a_${group}" placeholder="1"><label>Hệ số b:</label><input type="text" id="plane_b_${group}" placeholder="1"><label>Hệ số c:</label><input type="text" id="plane_c_${group}" placeholder="1"><label>Hằng số d:</label><input type="text" id="plane_d_${group}" placeholder="0">`; }
-        else if(shape==='Đường tròn'){ c.innerHTML=`<label>Tâm (x,y):</label><input type="text" id="circle_center_${group}" placeholder="0,0"><label style="margin-top:10px;">Bán kính:</label><input type="text" id="circle_radius_${group}" placeholder="5">`; }
-        else if(shape==='Mặt cầu'){ c.innerHTML=`<label>Tâm (x,y,z):</label><input type="text" id="sphere_center_${group}" placeholder="0,0,0"><label style="margin-top:10px;">Bán kính:</label><input type="text" id="sphere_radius_${group}" placeholder="3">`; }
-    }
+    function updateShapeInputs(g, s){ const c=document.getElementById(`inputs${g}`); c.innerHTML=''; if(!s){ c.classList.remove('active'); return; } c.classList.add('active'); if(s==='Điểm'){ c.innerHTML=`<label>Tọa độ (x,y,z):</label><input type="text" id="point_input_${g}" placeholder="1,2,3">`; } else if(s==='Đường thẳng'){ c.innerHTML=`<label>Điểm trên đường thẳng (x,y,z):</label><input type="text" id="line_A${g==='A'?'1':'2'}_${g}" placeholder="0,0,0"><label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label><input type="text" id="line_X${g==='A'?'1':'2'}_${g}" placeholder="1,1,1">`; } else if(s==='Mặt phẳng'){ c.innerHTML=`<label>a, b, c, d:</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><input id="plane_a_${g}" placeholder="a"><input id="plane_b_${g}" placeholder="b"><input id="plane_c_${g}" placeholder="c"><input id="plane_d_${g}" placeholder="d"></div>`; } else if(s==='Đường tròn'){ c.innerHTML=`<label>Tâm (x,y):</label><input id="circle_center_${g}" placeholder="0,0"><label style="margin-top:10px;">Bán kính:</label><input id="circle_radius_${g}" placeholder="5">`; } else if(s==='Mặt cầu'){ c.innerHTML=`<label>Tâm (x,y,z):</label><input id="sphere_center_${g}" placeholder="0,0,0"><label style="margin-top:10px;">Bán kính:</label><input id="sphere_radius_${g}" placeholder="3">`; } }
 
-    function collectInputData(group, shape) {
-        const d={}; if(shape==='Điểm'){ const v=document.getElementById(`point_input_${group}`); if(v) d.point_input=v.value; }
-        else if(shape==='Đường thẳng'){ const la=document.getElementById(`line_A${group==='A'?'1':'2'}_${group}`); const lx=document.getElementById(`line_X${group==='A'?'1':'2'}_${group}`); if(la) d[`line_A${group==='A'?'1':'2'}`]=la.value; if(lx) d[`line_X${group==='A'?'1':'2'}`]=lx.value; }
-        else if(shape==='Mặt phẳng'){ ['a','b','c','d'].forEach(k=>{ const el=document.getElementById(`plane_${k}_${group}`); if(el) d[`plane_${k}`]=el.value; }); }
-        else if(shape==='Đường tròn'){ const cc=document.getElementById(`circle_center_${group}`); const cr=document.getElementById(`circle_radius_${group}`); if(cc) d.circle_center=cc.value; if(cr) d.circle_radius=cr.value; }
-        else if(shape==='Mặt cầu'){ const sc=document.getElementById(`sphere_center_${group}`); const sr=document.getElementById(`sphere_radius_${group}`); if(sc) d.sphere_center=sc.value; if(sr) d.sphere_radius=sr.value; }
-        return d;
-    }
-
-    async function processGeometry() {
-        const operation=document.getElementById('operation').value; const shapeA=document.getElementById('shapeA').value; const shapeB=document.getElementById('shapeB').value; const version=document.getElementById('version').value; if(!operation||!shapeA){ showError('Vui lòng chọn phép toán và hình A.'); return; }
-        const dataA=collectInputData('A',shapeA); const dataB=shapeB?collectInputData('B',shapeB):{}; const body={ operation, shape_A:shapeA, data_A:dataA, version }; if(shapeB){ body.shape_B=shapeB; body.data_B=dataB; }
-        document.getElementById('results').innerHTML='<div class="loading">🔄 Đang xử lý...</div>'; document.getElementById('processBtn').disabled=true;
-        try { const res=await fetch(`${API_BASE}/api/geometry/process`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}); const r=await res.json(); if(r.status==='success') displayResults(r.data); else showError(r.message||'Xử lý thất bại'); } catch(e){ showError('Lỗi kết nối đến API: '+e.message); } finally { document.getElementById('processBtn').disabled=false; }
-    }
-
-    function displayResults(data) { const el=document.getElementById('results'); el.innerHTML=`<div class="result-item"><h4>🔑 Keylog (${data.version}):</h4><div class="keylog">${data.keylog}<button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button></div></div><div class="result-item"><h4>📝 Thông tin:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hình A:</strong> ${data.shape_A}</p>${data.shape_B?`<p><strong>Hình B:</strong> ${data.shape_B}</p>`:''}<p><strong>Mã hóa A:</strong> [${(data.encoded_A||[]).join(', ')}]</p>${(data.encoded_B&&data.encoded_B.length>0)?`<p><strong>Mã hóa B:</strong> [${data.encoded_B.join(', ')}]</p>`:''}</div><div class="success">✅ Xử lý thành công!</div>`; }
     function showError(m){ document.getElementById('results').innerHTML=`<div class="error">❌ ${m}</div>`; }
-    function copyToClipboard(t){ navigator.clipboard.writeText(t).then(()=>{ const b=event.target; const o=b.textContent; b.textContent='Copied!'; b.style.background='#27ae60'; setTimeout(()=>{ b.textContent=o; b.style.background='#3498db'; },1500); }).catch(()=>alert('Không thể copy.')); }
 
-    const examples={ distance_points:{ operation:'Khoảng cách', shapeA:'Điểm', shapeB:'Điểm', dataA:{point_input:'1,2,3'}, dataB:{point_input:'4,5,6'} }, circle_area:{ operation:'Diện tích', shapeA:'Đường tròn', dataA:{circle_center:'0,0', circle_radius:'sqrt(5)'} }, sphere_volume:{ operation:'Thể tích', shapeA:'Mặt cầu', dataA:{ sphere_center:'0,0,0', sphere_radius:'3'} }, line_plane_intersection:{ operation:'Tương giao', shapeA:'Đường thẳng', shapeB:'Mặt phẳng', dataA:{ line_A1:'0,0,0', line_X1:'1,1,1' }, dataB:{ plane_a:'1', plane_b:'1', plane_c:'1', plane_d:'0' } } };
+    function getFirstAvailable(row, keys){ for(const k of keys){ if(row[k]!==undefined && row[k]!==null && row[k]!=='' ) return row[k]; } return undefined; }
 
-    function loadExample(k){ const ex=examples[k]; if(!ex) return; document.getElementById('operation').value=ex.operation; updateShapeOptions().then(()=>{ document.getElementById('shapeA').value=ex.shapeA; if(ex.shapeB){ document.getElementById('shapeB').value=ex.shapeB; } updateInputFields(); setTimeout(()=>{ Object.entries(ex.dataA).forEach(([key,val])=>{ const i=document.getElementById(`${key}_A`); if(i) i.value=val; }); if(ex.dataB){ Object.entries(ex.dataB).forEach(([key,val])=>{ const i=document.getElementById(`${key}_B`); if(i) i.value=val; }); } },100); }); }
+    function extractShapeData(row, shape, group){ const d={}; if(!shape) return d; if(shape==='Điểm'){ const v=getFirstAvailable(row, COLUMN_ALIASES.point[group]); if(v!==undefined) d.point_input=String(v); }
+        else if(shape==='Đường thẳng'){ const p=getFirstAvailable(row, COLUMN_ALIASES.line_point[group]); const v=getFirstAvailable(row, COLUMN_ALIASES.line_vec[group]); if(p!==undefined) d[`line_A${group==='A'?1:2}`]=String(p); if(v!==undefined) d[`line_X${group==='A'?1:2}`]=String(v); }
+        else if(shape==='Mặt phẳng'){ const a=getFirstAvailable(row, COLUMN_ALIASES.plane[group]); const b=getFirstAvailable(row, COLUMN_ALIASES.planeb[group]); const c=getFirstAvailable(row, COLUMN_ALIASES.planec[group]); const dd=getFirstAvailable(row, COLUMN_ALIASES.planed[group]); if(a!==undefined) d.plane_a=String(a); if(b!==undefined) d.plane_b=String(b); if(c!==undefined) d.plane_c=String(c); if(dd!==undefined) d.plane_d=String(dd); }
+        else if(shape==='Đường tròn'){ const c=getFirstAvailable(row, COLUMN_ALIASES.circle_center[group]); const r=getFirstAvailable(row, COLUMN_ALIASES.circle_radius[group]); if(c!==undefined) d.circle_center=String(c); if(r!==undefined) d.circle_radius=String(r); }
+        else if(shape==='Mặt cầu'){ const c=getFirstAvailable(row, COLUMN_ALIASES.sphere_center[group]); const r=getFirstAvailable(row, COLUMN_ALIASES.sphere_radius[group]); if(c!==undefined) d.sphere_center=String(c); if(r!==undefined) d.sphere_radius=String(r); }
+        return d; }
 
-    function readExcelFile(file){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=e=>{ try{ const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(ws,{defval:''}); resolve(json); }catch(err){ reject(err); } }; reader.onerror=reject; reader.readAsArrayBuffer(file); }); }
+    function validateExcelStructure(json, op, sA, sB){ const out={ valid:true, errors:[], suggestions:[], detected_columns:[] }; if(!json||json.length===0){ out.valid=false; out.errors.push('File Excel trống'); return out; } const cols=Object.keys(json[0]); out.detected_columns=cols; const check=(shape, group)=>{ const t=SHAPE_TEMPLATES[shape]; if(!t) return; t.required.forEach(token=>{ const aliases=COLUMN_ALIASES[token][group]; const found=aliases.some(k=> cols.includes(k)); if(!found){ out.valid=false; out.errors.push(`${shape} (${group}) thiếu cột tương ứng: ${aliases.join(' | ')}`); } }); }; if(sA) check(sA,'A'); if(sB && !['Diện tích','Thể tích'].includes(op)) check(sB,'B'); return out; }
 
-    function findSimilarColumns(available, missing){ const sim=[]; missing.forEach(m=>{ available.forEach(a=>{ if(a.toLowerCase().includes(m.toLowerCase())||m.toLowerCase().includes(a.toLowerCase())) sim.push(a); }); }); return [...new Set(sim)]; }
-
-    function checkShapeColumns(columns, shape, group){ const res={ errors:[], warnings:[], suggestions:[] }; const t=SHAPE_TEMPLATES[shape]; if(!t){ res.errors.push(`Không hỗ trợ shape: ${shape}`); return res; } const missing=t.required_columns.filter(c=>{ const g=`${c}_${group}`; return !columns.includes(c)&&!columns.includes(g); }); if(missing.length>0){ let ok=false; if(t.alternative_columns){ for(const alt of t.alternative_columns){ const found=alt.every(c=> columns.includes(c)||columns.includes(`${c}_${group}`)); if(found){ ok=true; res.suggestions.push(`Tìm thấy format thay thế cho ${shape} (${group}): ${alt.join(', ')}`); break; } } } if(!ok){ res.errors.push(`${shape} (${group}) thiếu cột: ${missing.join(', ')}. ${t.description}`); const similar=findSimilarColumns(columns, missing); if(similar.length>0) res.suggestions.push(`Có thể bạn muốn dùng: ${similar.join(', ')}?`); } }
-        return res; }
-
-    function validateExcelStructure(jsonData, operation, shapeA, shapeB){ const out={ valid:true, errors:[], warnings:[], suggestions:[], detected_columns:[] }; if(!jsonData||jsonData.length===0){ out.valid=false; out.errors.push('File Excel trống hoặc không có dữ liệu'); return out; } const columns=Object.keys(jsonData[0]); out.detected_columns=columns; const va=checkShapeColumns(columns, shapeA, 'A'); out.errors.push(...va.errors); out.warnings.push(...va.warnings); out.suggestions.push(...va.suggestions); if(shapeB && !['Diện tích','Thể tích'].includes(operation)){ const vb=checkShapeColumns(columns, shapeB, 'B'); out.errors.push(...vb.errors); out.warnings.push(...vb.warnings); out.suggestions.push(...vb.suggestions); } out.valid=out.errors.length===0; return out; }
-
-    function checkDataQuality(json){ const q={ total_rows:json.length, empty_rows:0, incomplete_rows:0, valid_rows:0, issues:[] }; json.forEach((row,idx)=>{ const vals=Object.values(row); const empties=vals.filter(v=>!v||v.toString().trim()==='').length; if(empties===vals.length) q.empty_rows++; else if(empties>0){ q.incomplete_rows++; q.issues.push(`Dòng ${idx+1}: Thiếu ${empties} giá trị`); } else q.valid_rows++; }); return q; }
-
-    function displayValidationResults(v){ const c=document.getElementById('validationResults'); let h='<div class="validation-summary">'; h+= v.valid?'<div class="validation-success">✅ File Excel hợp lệ!</div>':'<div class="validation-error">❌ File Excel có vấn đề</div>'; h+=`<div class="detected-columns"><h5>📋 Các cột:</h5><div class="column-list">${v.detected_columns.join(', ')}</div></div>`; if(v.errors.length>0){ h+='<div class="validation-errors"><h5>🚨 Lỗi:</h5><ul>'; v.errors.forEach(e=>h+=`<li>${e}</li>`); h+='</ul></div>'; } if(v.suggestions.length>0){ h+='<div class="validation-suggestions"><h5>💡 Gợi ý:</h5><ul>'; v.suggestions.forEach(s=>h+=`<li>${s}</li>`); h+='</ul></div>'; } h+='</div>'; c.innerHTML=h; }
-
-    function displayQualityReport(q){ const c=document.getElementById('fileDetails'); c.innerHTML+=`<p><strong>Tổng dòng:</strong> ${q.total_rows}</p><p><strong>Dòng rỗng:</strong> ${q.empty_rows}</p><p><strong>Dòng thiếu dữ liệu:</strong> ${q.incomplete_rows}</p><p><strong>Dòng hợp lệ:</strong> ${q.valid_rows}</p>`; }
+    function displayValidationResults(v){ const c=document.getElementById('validationResults'); let h='<div class="validation-summary">'; h+= v.valid?'<div class="validation-success">✅ File Excel hợp lệ theo mapping clone!</div>':'<div class="validation-error">❌ File Excel chưa khớp mapping</div>'; h+=`<div class="detected-columns"><h5>📋 Các cột:</h5><div class="column-list">${v.detected_columns.join(', ')}</div></div>`; if(v.errors.length>0){ h+='<div class="validation-errors"><h5>🚨 Lỗi:</h5><ul>'; v.errors.forEach(e=> h+=`<li>${e}</li>` ); h+='</ul></div>'; } h+='</div>'; c.innerHTML=h; }
 
     function displayPreview(rows){ const p=document.getElementById('previewTable'); if(!rows||rows.length===0){ p.innerHTML=''; return; } const cols=Object.keys(rows[0]); let html='<h5>Preview (5 dòng đầu):</h5><table class="preview-table"><thead><tr>'; cols.forEach(c=> html+=`<th>${c}</th>` ); html+='</tr></thead><tbody>'; rows.forEach(r=>{ html+='<tr>'; cols.forEach(c=> html+=`<td>${r[c]??''}</td>` ); html+='</tr>'; }); html+='</tbody></table>'; p.innerHTML=html; }
 
-    async function handleExcelLocal(){ const file=document.getElementById('excelFile').files[0]; if(!file) return; try{ const json=await readExcelFile(file); excelJsonData=json; const opSel=document.getElementById('operation'); const shA=document.getElementById('shapeA'); const shB=document.getElementById('shapeB'); const operation=opSel.value; const shapeA=shA.value; const shapeB=shB.value; document.getElementById('fileInfo').style.display='block'; document.getElementById('processingConfig').style.display='block'; populateBatchConfig(); const validation=validateExcelStructure(json, operation, shapeA, shapeB); const quality=checkDataQuality(json); displayValidationResults(validation); displayQualityReport(quality); displayPreview(json.slice(0,5)); document.getElementById('processBatchBtn').disabled=!validation.valid; } catch(e){ showError('Không đọc được file Excel: '+e.message); } }
+    async function handleExcelLocal(){ const f=document.getElementById('excelFile').files[0]; if(!f) return; const json=await readExcelFile(f); excelJsonData=json; document.getElementById('fileInfo').style.display='block'; document.getElementById('processingConfig').style.display='block'; populateBatchConfig(); const op=document.getElementById('operation').value; const sA=document.getElementById('shapeA').value; const sB=document.getElementById('shapeB').value; const v=validateExcelStructure(json, op, sA, sB); displayValidationResults(v); displayPreview(json.slice(0,5)); document.getElementById('processBatchBtn').disabled=!v.valid; }
 
     function populateBatchConfig(){ document.getElementById('batchOperation').innerHTML=document.getElementById('operation').innerHTML; document.getElementById('batchShapeA').innerHTML=document.getElementById('shapeA').innerHTML; document.getElementById('batchShapeB').innerHTML=document.getElementById('shapeB').innerHTML; }
 
-    function extractShapeData(row, shape, group){ const d={}; if(!shape) return d; if(shape==='Điểm'){ if(row[`point_input_${group}`]||row.point_input) d.point_input=(row[`point_input_${group}`]||row.point_input); else if(row.x&&row.y) d.point_input=[row.x,row.y,row.z].filter(Boolean).join(','); }
-        else if(shape==='Đường thẳng'){ const p=row[`line_A${group==='A'?1:2}_${group}`]||row[`line_A${group==='A'?1:2}`]||row.line_point; const v=row[`line_X${group==='A'?1:2}_${group}`]||row[`line_X${group==='A'?1:2}`]||row.line_vector; if(p) d[`line_A${group==='A'?1:2}`]=p; if(v) d[`line_X${group==='A'?1:2}`]=v; }
-        else if(shape==='Mặt phẳng'){ ['a','b','c','d'].forEach(k=>{ const v=row[`plane_${k}_${group}`]??row[`plane_${k}`]; if(v!==undefined&&v!=='') d[`plane_${k}`]=v; }); }
-        else if(shape==='Đường tròn'){ const c=row[`circle_center_${group}`]||row.circle_center||([row.center_x,row.center_y].every(v=>v!==undefined)?`${row.center_x},${row.center_y}`:undefined); const r=row[`circle_radius_${group}`]||row.circle_radius||row.radius; if(c) d.circle_center=c; if(r) d.circle_radius=r; }
-        else if(shape==='Mặt cầu'){ const c=row[`sphere_center_${group}`]||row.sphere_center||([row.center_x,row.center_y,row.center_z].every(v=>v!==undefined)?`${row.center_x},${row.center_y},${row.center_z}`:undefined); const r=row[`sphere_radius_${group}`]||row.sphere_radius||row.radius; if(c) d.sphere_center=c; if(r) d.sphere_radius=r; }
-        return d; }
+    async function processBatchFE(){ const op=document.getElementById('batchOperation').value; const sA=document.getElementById('batchShapeA').value; const sB=document.getElementById('batchShapeB').value; if(!op||!sA||excelJsonData.length===0){ showError('Thiếu dữ liệu batch'); return; } const calculations=excelJsonData.map(row=>({ operation:op, shape_A:sA, data_A:extractShapeData(row, sA, 'A'), shape_B:sB||undefined, data_B:sB?extractShapeData(row, sB, 'B'):undefined })); document.getElementById('batchProgress').style.display='block'; let p=0; const it=setInterval(()=>{ p=Math.min(90,p+10); document.getElementById('progressFill').style.width=p+'%'; document.getElementById('progressText').textContent=Math.round(p)+'%'; },400); try{ const res=await fetch(`${API_BASE}/api/geometry/batch`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({calculations}) }); const r=await res.json(); clearInterval(it); document.getElementById('progressFill').style.width='100%'; document.getElementById('progressText').textContent='100%'; document.getElementById('batchResults').style.display='block'; const ok=r.data.filter(x=>!!x).length; const err=(r.error_details||[]).length; document.getElementById('batchSummary').innerHTML=`<p><strong>Tổng:</strong> ${r.total_processed||calculations.length}</p><p><strong>Thành công:</strong> ${ok}</p><p><strong>Lỗi:</strong> ${err}</p>`; exportResultsToExcel(r); } catch(e){ clearInterval(it); showError('Batch lỗi: '+e.message); } }
 
-    async function processBatchFE(){ const op=document.getElementById('batchOperation').value; const sA=document.getElementById('batchShapeA').value; const sB=document.getElementById('batchShapeB').value; if(!op||!sA||excelJsonData.length===0){ showError('Thiếu dữ liệu batch'); return; }
-        const calculations=excelJsonData.map(row=>({ operation:op, shape_A:sA, data_A:extractShapeData(row, sA, 'A'), shape_B:sB||undefined, data_B:sB?extractShapeData(row, sB, 'B'):undefined }));
-        document.getElementById('batchProgress').style.display='block'; let p=0; const it=setInterval(()=>{ p=Math.min(90,p+10); updateProgress(p); },400);
-        try{ const res=await fetch(`${API_BASE}/api/geometry/batch`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({calculations}) }); const r=await res.json(); clearInterval(it); updateProgress(100); document.getElementById('batchResults').style.display='block'; const ok=r.data.filter(x=>!!x).length; const err=(r.error_details||[]).length; document.getElementById('batchSummary').innerHTML=`<p><strong>Tổng:</strong> ${r.total_processed||calculations.length}</p><p><strong>Thành công:</strong> ${ok}</p><p><strong>Lỗi:</strong> ${err}</p>`; exportResultsToExcel(r); } catch(e){ clearInterval(it); showError('Batch lỗi: '+e.message); }
-    }
+    function readExcelFile(file){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=e=>{ try{ const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(ws,{defval:''}); resolve(json); }catch(err){ reject(err); } }; reader.onerror=reject; reader.readAsArrayBuffer(file); }); }
 
-    function exportResultsToExcel(r){ try{ const rows=[]; for(let i=0;i<excelJsonData.length;i++){ const src=excelJsonData[i]; const item=r.data[i]; rows.push({ ...src, keylog: item && item.keylog ? item.keylog : '' }); } const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Results'); XLSX.writeFile(wb, 'geometry_results.xlsx'); } catch(e){ console.error('Export error:', e); }
-    }
+    function exportResultsToExcel(r){ try{ const rows=[]; for(let i=0;i<excelJsonData.length;i++){ const src=excelJsonData[i]; const item=r.data[i]; rows.push({ ...src, keylog: item && item.keylog ? item.keylog : '' }); } const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Results'); XLSX.writeFile(wb, 'geometry_results.xlsx'); } catch(e){ console.error('Export error:', e); } }
 
     window.addEventListener('load', initApp);
 </script>
