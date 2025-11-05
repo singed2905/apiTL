@@ -1,0 +1,119 @@
+<!-- New modular version of web_example.html using extracted CSS/JS -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConvertKeylogApp Geometry API - Web Demo (Modular)</title>
+  <link rel="stylesheet" href="assets/css/web.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧮 ConvertKeylogApp Geometry API</h1>
+      <p>Web Demo - Chuyển đổi bài toán hình học thành keylog máy tính Casio</p>
+    </div>
+
+    <div class="main-content">
+      <div class="form-section">
+        <h3>📝 Nhập dữ liệu</h3>
+        <div class="form-group">
+          <label for="operation">Phép toán:</label>
+          <select id="operation" onchange="updateShapeOptions()">
+            <option value="">Chọn phép toán...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="shapeA">Hình A:</label>
+          <select id="shapeA" onchange="updateInputFields()">
+            <option value="">Chọn hình A...</option>
+          </select>
+        </div>
+        <div id="inputsA" class="shape-inputs"></div>
+        <div class="form-group">
+          <label for="shapeB">Hình B (tùy chọn):</label>
+          <select id="shapeB" onchange="updateInputFields()">
+            <option value="">Không có</option>
+          </select>
+        </div>
+        <div id="inputsB" class="shape-inputs"></div>
+        <div class="form-group">
+          <label for="version">Phiên bản máy tính:</label>
+          <select id="version">
+            <option value="fx799">Casio fx-799</option>
+            <option value="fx800">Casio fx-800</option>
+            <option value="fx801">Casio fx-801</option>
+            <option value="fx802">Casio fx-802</option>
+            <option value="fx803">Casio fx-803</option>
+          </select>
+        </div>
+        <button class="btn" onclick="processGeometry()" id="processBtn">🚀 Tính toán</button>
+      </div>
+
+      <div class="results-section">
+        <h3>📊 Kết quả</h3>
+        <div id="results"><div class="loading">Nhập dữ liệu và nhấn "Tính toán" để xem kết quả...</div></div>
+        <div id="validationResults"></div>
+      </div>
+
+      <div class="examples-section">
+        <h3>💡 Ví dụ nhanh</h3>
+        <p style="margin-bottom: 15px;">Nhấn vào một ví dụ để tự động điền dữ liệu:</p>
+        <button class="example-btn" onclick="document.getElementById('operation').value='Khoảng cách'; updateShapeOptions(); setTimeout(()=>{document.getElementById('shapeA').value='Điểm'; document.getElementById('shapeB').value='Điểm'; updateInputFields(); setTimeout(()=>{ const A=document.getElementById('point_input_A'); const B=document.getElementById('point_input_B'); if(A) A.value='1,2,3'; if(B) B.value='4,5,6'; },100); },100);">Khoảng cách 2 điểm</button>
+      </div>
+
+      <div class="excel-section">
+        <h3>📊 Excel Batch Processing (Frontend)</h3>
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelLocal()" />
+          <div class="upload-zone" onclick="document.getElementById('excelFile').click()">
+            <div class="upload-icon">📁</div>
+            <p>Chọn file Excel để đọc trực tiếp trên trình duyệt</p>
+            <small>FE parse & validate, BE chỉ xử lý JSON</small>
+          </div>
+        </div>
+        <div id="fileInfo" class="file-info" style="display: none;">
+          <h4>📋 Thông tin file:</h4>
+          <div id="fileDetails"></div>
+          <div id="previewTable"></div>
+        </div>
+        <div id="processingConfig" class="processing-config" style="display: none;">
+          <div class="form-group">
+            <label>Phép toán cho batch:</label>
+            <select id="batchOperation"></select>
+          </div>
+          <div class="form-group">
+            <label>Hình A:</label>
+            <select id="batchShapeA"></select>
+          </div>
+          <div class="form-group">
+            <label>Hình B:</label>
+            <select id="batchShapeB"></select>
+          </div>
+          <button class="btn" onclick="processBatchChunked()" id="processBatchBtn" disabled>🚀 Xử lý Batch</button>
+          <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+            <label for="chunkSize">Kích thước mỗi đợt:</label>
+            <input id="chunkSize" type="number" value="100" min="10" max="1000" style="width:120px"/>
+          </div>
+        </div>
+        <div id="batchProgress" class="progress-section" style="display: none;">
+          <h4>⏳ Đang xử lý...</h4>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div id="progressText">0%</div>
+        </div>
+        <div id="batchResults" class="batch-results" style="display: none;">
+          <h4>✅ Hoàn thành!</h4>
+          <div id="batchSummary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/web_core.js"></script>
+  <script src="assets/js/web_excel.js"></script>
+  <script>
+    window.addEventListener('load', initApp);
+  </script>
+</body>
+</html>
