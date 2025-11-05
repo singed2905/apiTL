@@ -1,20 +1,5 @@
-# ConvertKeylogApp Geometry API Requirements
-
-# Web framework
 Flask>=2.3.0
 Flask-CORS>=4.0.0
-
-# Data processing
-numpy>=1.24.0
-pandas>=1.5.0
-
-# Optional: For enhanced JSON handling
-jsonschema>=4.17.0
-
-# Optional: For development and testing
-pytest>=7.3.0
-requests>=2.28.0
-
-# Optional: For production deployment
-gunicorn>=20.1.0
-Waitress>=2.1.0
+pandas>=2.0.0
+openpyxl>=3.1.0
+Werkzeug>=2.3.0
