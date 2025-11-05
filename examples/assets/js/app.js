@@ -17,10 +17,14 @@ async function initApp() {
         
         populateOperations();
         populateShapes();
-        setupVisualizationListeners();
         
-        // Initialize empty plot
-        initializeVisualization();
+        // Safe calls to visualization functions
+        if (typeof setupVisualizationListeners === 'function') {
+            setupVisualizationListeners();
+        }
+        if (typeof initializeVisualization === 'function') {
+            initializeVisualization();
+        }
     } catch (error) {
         showError('Không thể kết nối đến API.');
         console.error('Init error:', error);
@@ -98,8 +102,12 @@ function updateInputFields() {
     updateShapeInputs('A', shapeA);
     updateShapeInputs('B', shapeB);
     
-    // Update visualization when shapes change
-    setTimeout(updateVisualization, 100);
+    // Safe update visualization
+    setTimeout(() => {
+        if (typeof updateVisualization === 'function') {
+            updateVisualization();
+        }
+    }, 100);
 }
 
 function updateShapeInputs(group, shape) {
@@ -116,39 +124,50 @@ function updateShapeInputs(group, shape) {
     if (shape === 'Điểm') {
         container.innerHTML = `
             <label>Tọa độ (x,y,z):</label>
-            <input type="text" id="point_input_${group}" placeholder="1,2,3" oninput="updateVisualization()">
+            <input type="text" id="point_input_${group}" placeholder="1,2,3" oninput="safeUpdateVisualization()">
         `;
     } else if (shape === 'Đường thẳng') {
         container.innerHTML = `
             <label>Điểm trên đường thẳng (x,y,z):</label>
-            <input type="text" id="line_A${group === 'A' ? '1' : '2'}_${group}" placeholder="0,0,0" oninput="updateVisualization()">
+            <input type="text" id="line_A${group === 'A' ? '1' : '2'}_${group}" placeholder="0,0,0" oninput="safeUpdateVisualization()">
             <label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label>
-            <input type="text" id="line_X${group === 'A' ? '1' : '2'}_${group}" placeholder="1,1,1" oninput="updateVisualization()">
+            <input type="text" id="line_X${group === 'A' ? '1' : '2'}_${group}" placeholder="1,1,1" oninput="safeUpdateVisualization()">
         `;
     } else if (shape === 'Mặt phẳng') {
         container.innerHTML = `
             <label>a, b, c, d:</label>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <input id="plane_a_${group}" placeholder="a" oninput="updateVisualization()">
-                <input id="plane_b_${group}" placeholder="b" oninput="updateVisualization()">
-                <input id="plane_c_${group}" placeholder="c" oninput="updateVisualization()">
-                <input id="plane_d_${group}" placeholder="d" oninput="updateVisualization()">
+                <input id="plane_a_${group}" placeholder="a" oninput="safeUpdateVisualization()">
+                <input id="plane_b_${group}" placeholder="b" oninput="safeUpdateVisualization()">
+                <input id="plane_c_${group}" placeholder="c" oninput="safeUpdateVisualization()">
+                <input id="plane_d_${group}" placeholder="d" oninput="safeUpdateVisualization()">
             </div>
         `;
     } else if (shape === 'Đường tròn') {
         container.innerHTML = `
             <label>Tâm (x,y):</label>
-            <input id="circle_center_${group}" placeholder="0,0" oninput="updateVisualization()">
+            <input id="circle_center_${group}" placeholder="0,0" oninput="safeUpdateVisualization()">
             <label style="margin-top:10px;">Bán kính:</label>
-            <input id="circle_radius_${group}" placeholder="5" oninput="updateVisualization()">
+            <input id="circle_radius_${group}" placeholder="5" oninput="safeUpdateVisualization()">
         `;
     } else if (shape === 'Mặt cầu') {
         container.innerHTML = `
             <label>Tâm (x,y,z):</label>
-            <input id="sphere_center_${group}" placeholder="0,0,0" oninput="updateVisualization()">
+            <input id="sphere_center_${group}" placeholder="0,0,0" oninput="safeUpdateVisualization()">
             <label style="margin-top:10px;">Bán kính:</label>
-            <input id="sphere_radius_${group}" placeholder="3" oninput="updateVisualization()">
+            <input id="sphere_radius_${group}" placeholder="3" oninput="safeUpdateVisualization()">
         `;
+    }
+}
+
+// Safe wrapper for visualization updates
+function safeUpdateVisualization() {
+    if (typeof updateVisualization === 'function') {
+        try {
+            updateVisualization();
+        } catch (e) {
+            console.error('Visualization update failed:', e);
+        }
     }
 }
 
