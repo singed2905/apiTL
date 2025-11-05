@@ -128,16 +128,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-<!-- Application Scripts -->
+<!-- Application Scripts (order matters) -->
 <script src="assets/js/geometry.js"></script>
 <script src="assets/js/visualization.js"></script>
+<script src="assets/js/visualization_global_shim.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/examples.js"></script>
 <script src="assets/js/excel.js"></script>
 <script src="assets/js/line_equation_manual.js"></script>
 
 <script>
-    // Initialize app when DOM loaded
     window.addEventListener('load', initApp);
 </script>
 </body>
