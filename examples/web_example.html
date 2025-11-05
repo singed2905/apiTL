@@ -4,143 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConvertKeylogApp Geometry API - Web Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(45deg, #4CAF50, #2196F3);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(45deg, #4CAF50, #2196F3); color: white; padding: 30px; text-align: center; }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
         .header p { font-size: 1.1em; opacity: 0.9; }
-        .main-content {
-            padding: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        .form-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            border: 2px solid #e9ecef;
-        }
-        .form-section h3 {
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 10px;
-        }
+        .main-content { padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .form-section { background: #f8f9fa; border-radius: 10px; padding: 25px; border: 2px solid #e9ecef; }
+        .form-section h3 { color: #495057; margin-bottom: 20px; font-size: 1.3em; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
         .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-        }
-        .form-group select, .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        .form-group select:focus, .form-group input:focus {
-            outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-        }
-        .btn {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 100%;
-            margin-top: 10px;
-        }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; }
+        .form-group select, .form-group input { width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
+        .form-group select:focus, .form-group input:focus { outline: none; border-color: #4CAF50; box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1); }
+        .btn { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-top: 10px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
         .btn:disabled { background: #6c757d; cursor: not-allowed; transform: none; box-shadow: none; }
-        .results-section {
-            background: #fff;
-            border-radius: 10px;
-            padding: 25px;
-            border: 2px solid #e9ecef;
-        }
-        .result-item {
-            background: #f8f9fa;
-            border-left: 4px solid #4CAF50;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 0 6px 6px 0;
-        }
+        .results-section { background: #fff; border-radius: 10px; padding: 25px; border: 2px solid #e9ecef; }
+        .result-item { background: #f8f9fa; border-left: 4px solid #4CAF50; padding: 15px; margin-bottom: 15px; border-radius: 0 6px 6px 0; }
         .result-item h4 { color: #495057; margin-bottom: 8px; }
-        .keylog {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            word-break: break-all;
-            position: relative;
-        }
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
+        .keylog { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 16px; word-break: break-all; position: relative; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
         .loading { text-align: center; padding: 20px; color: #6c757d; }
         .shape-inputs { display: none; margin-top: 15px; padding: 15px; background: #ffffff; border-radius: 6px; border: 1px solid #dee2e6; }
         .shape-inputs.active { display: block; }
-        .examples-section {
-            grid-column: 1 / -1;
-            background: #e8f5e8;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-        .example-btn {
-            background: #17a2b8;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-            font-size: 14px;
-        }
+        .examples-section { grid-column: 1 / -1; background: #e8f5e8; border-radius: 10px; padding: 25px; margin-top: 20px; }
+        .example-btn { background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
         .example-btn:hover { background: #138496; }
         .excel-section { background: #f8f9fa; border-radius: 10px; padding: 25px; border: 2px solid #e9ecef; margin-top: 20px; grid-column: 1 / -1; }
         .upload-zone { border: 2px dashed #4CAF50; border-radius: 10px; padding: 40px; text-align: center; cursor: pointer; transition: background-color 0.3s; }
@@ -154,10 +47,12 @@
         .progress-bar { width: 100%; height: 20px; background-color: #e9ecef; border-radius: 10px; overflow: hidden; margin: 10px 0; }
         .progress-fill { height: 100%; background: linear-gradient(45deg, #4CAF50, #45a049); width: 0%; transition: width 0.3s ease; }
         .batch-results { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        @media (max-width: 768px) {
-            .main-content { grid-template-columns: 1fr; }
-            .header h1 { font-size: 1.8em; }
-        }
+        .validation-summary { background: #fff; border: 1px dashed #4CAF50; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .validation-error { background: #fdecea; color: #d93025; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
+        .validation-success { background: #e6f4ea; color: #137333; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
+        .detected-columns { margin-top: 10px; }
+        .column-list { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 8px; border-radius: 6px; }
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } .header h1 { font-size: 1.8em; } }
     </style>
 </head>
 <body>
@@ -170,32 +65,26 @@
     <div class="main-content">
         <div class="form-section">
             <h3>📝 Nhập dữ liệu</h3>
-
             <div class="form-group">
                 <label for="operation">Phép toán:</label>
                 <select id="operation" onchange="updateShapeOptions()">
                     <option value="">Chọn phép toán...</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label for="shapeA">Hình A:</label>
                 <select id="shapeA" onchange="updateInputFields()">
                     <option value="">Chọn hình A...</option>
                 </select>
             </div>
-
             <div id="inputsA" class="shape-inputs"></div>
-
             <div class="form-group">
                 <label for="shapeB">Hình B (tùy chọn):</label>
                 <select id="shapeB" onchange="updateInputFields()">
                     <option value="">Không có</option>
                 </select>
             </div>
-
             <div id="inputsB" class="shape-inputs"></div>
-
             <div class="form-group">
                 <label for="version">Phiên bản máy tính:</label>
                 <select id="version">
@@ -206,21 +95,18 @@
                     <option value="fx803">Casio fx-803</option>
                 </select>
             </div>
-
             <button class="btn" onclick="processGeometry()" id="processBtn">🚀 Tính toán</button>
         </div>
 
         <div class="results-section">
             <h3>📊 Kết quả</h3>
-            <div id="results">
-                <div class="loading">Nhập dữ liệu và nhấn "Tính toán" để xem kết quả...</div>
-            </div>
+            <div id="results"><div class="loading">Nhập dữ liệu và nhấn "Tính toán" để xem kết quả...</div></div>
+            <div id="validationResults"></div>
         </div>
 
         <div class="examples-section">
             <h3>💡 Ví dụ nhanh</h3>
             <p style="margin-bottom: 15px;">Nhấn vào một ví dụ để tự động điền dữ liệu:</p>
-
             <button class="example-btn" onclick="loadExample('distance_points')">Khoảng cách 2 điểm</button>
             <button class="example-btn" onclick="loadExample('circle_area')">Diện tích đường tròn</button>
             <button class="example-btn" onclick="loadExample('sphere_volume')">Thể tích mặt cầu</button>
@@ -228,23 +114,20 @@
         </div>
 
         <div class="excel-section">
-            <h3>📊 Excel Batch Processing</h3>
-
+            <h3>📊 Excel Batch Processing (Frontend)</h3>
             <div class="upload-area" id="uploadArea">
-                <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload()">
+                <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelLocal()">
                 <div class="upload-zone" onclick="document.getElementById('excelFile').click()">
                     <div class="upload-icon">📁</div>
-                    <p>Click để chọn file Excel hoặc kéo thả vào đây</p>
-                    <small>Hỗ trợ .xlsx và .xls</small>
+                    <p>Chọn file Excel để đọc trực tiếp trên trình duyệt</p>
+                    <small>FE sẽ parse & validate, BE chỉ xử lý JSON</small>
                 </div>
             </div>
-
             <div id="fileInfo" class="file-info" style="display: none;">
                 <h4>📋 Thông tin file:</h4>
                 <div id="fileDetails"></div>
                 <div id="previewTable"></div>
             </div>
-
             <div id="processingConfig" class="processing-config" style="display: none;">
                 <div class="form-group">
                     <label>Phép toán cho batch:</label>
@@ -258,19 +141,16 @@
                     <label>Hình B:</label>
                     <select id="batchShapeB"></select>
                 </div>
-                <button class="btn" onclick="processBatch()" id="processBatchBtn">🚀 Xử lý Batch</button>
+                <button class="btn" onclick="processBatchFE()" id="processBatchBtn" disabled>🚀 Xử lý Batch</button>
             </div>
-
             <div id="batchProgress" class="progress-section" style="display: none;">
                 <h4>⏳ Đang xử lý...</h4>
                 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
                 <div id="progressText">0%</div>
             </div>
-
             <div id="batchResults" class="batch-results" style="display: none;">
                 <h4>✅ Hoàn thành!</h4>
                 <div id="batchSummary"></div>
-                <button class="btn" onclick="downloadResult()" id="downloadBtn">💾 Tải về kết quả</button>
             </div>
         </div>
     </div>
@@ -280,8 +160,15 @@
     const API_BASE = 'http://localhost:5000';
     let availableShapes = [];
     let availableOperations = [];
-    let currentFilePath = null;
-    let currentFileName = null;
+    let excelJsonData = [];
+
+    const SHAPE_TEMPLATES = {
+        'Điểm': { required_columns: ['point_input'], alternative_columns: [['x','y'], ['x','y','z']], description: 'Cần point_input hoặc x,y(,z)' },
+        'Đường thẳng': { required_columns: ['line_A1','line_X1'], alternative_columns: [['line_point','line_vector']], description: 'Cần điểm và vector' },
+        'Mặt phẳng': { required_columns: ['plane_a','plane_b','plane_c','plane_d'], description: 'Cần 4 hệ số a,b,c,d' },
+        'Đường tròn': { required_columns: ['circle_center','circle_radius'], alternative_columns: [['center_x','center_y','radius']], description: 'Cần tâm và bán kính' },
+        'Mặt cầu': { required_columns: ['sphere_center','sphere_radius'], alternative_columns: [['center_x','center_y','center_z','radius']], description: 'Cần tâm và bán kính' }
+    };
 
     async function initApp() {
         try {
@@ -295,415 +182,103 @@
             availableOperations = operationsData.data || [];
             populateOperations();
             populateShapes();
-        } catch (error) {
-            showError('Không thể kết nối đến API. Vui lòng kiểm tra server đã chạy chưa.');
-            console.error('Init error:', error);
-        }
+        } catch (error) { showError('Không thể kết nối đến API.'); }
     }
 
     function populateOperations() {
         const select = document.getElementById('operation');
         select.innerHTML = '<option value="">Chọn phép toán...</option>';
-        availableOperations.forEach(op => {
-            const option = document.createElement('option');
-            option.value = op;
-            option.textContent = op;
-            select.appendChild(option);
-        });
+        availableOperations.forEach(op => { const o=document.createElement('option'); o.value=op; o.textContent=op; select.appendChild(o); });
     }
 
     function populateShapes() {
-        const selectA = document.getElementById('shapeA');
-        const selectB = document.getElementById('shapeB');
-        selectA.innerHTML = '<option value="">Chọn hình A...</option>';
-        selectB.innerHTML = '<option value="">Không có</option>';
-        availableShapes.forEach(shape => {
-            const optionA = document.createElement('option');
-            optionA.value = shape;
-            optionA.textContent = shape;
-            selectA.appendChild(optionA);
-            const optionB = document.createElement('option');
-            optionB.value = shape;
-            optionB.textContent = shape;
-            selectB.appendChild(optionB);
-        });
+        const selectA=document.getElementById('shapeA'); const selectB=document.getElementById('shapeB');
+        selectA.innerHTML='<option value="">Chọn hình A...</option>'; selectB.innerHTML='<option value="">Không có</option>';
+        availableShapes.forEach(s=>{ const a=document.createElement('option'); a.value=s; a.textContent=s; selectA.appendChild(a); const b=document.createElement('option'); b.value=s; b.textContent=s; selectB.appendChild(b); });
     }
 
     async function updateShapeOptions() {
-        const operation = document.getElementById('operation').value;
-        if (!operation) return;
-        try {
-            const response = await fetch(`${API_BASE}/api/geometry/operations/${encodeURIComponent(operation)}/shapes`);
-            const data = await response.json();
-            const selectA = document.getElementById('shapeA');
-            const selectB = document.getElementById('shapeB');
-            selectA.innerHTML = '<option value="">Chọn hình A...</option>';
-            (data.data || []).forEach(shape => {
-                const option = document.createElement('option');
-                option.value = shape;
-                option.textContent = shape;
-                selectA.appendChild(option);
-            });
-            selectB.innerHTML = '<option value="">Không có</option>';
-            if (!['Diện tích', 'Thể tích'].includes(operation)) {
-                (data.data || []).forEach(shape => {
-                    const option = document.createElement('option');
-                    option.value = shape;
-                    option.textContent = shape;
-                    selectB.appendChild(option);
-                });
-            }
-            updateInputFields();
-        } catch (error) {
-            console.error('Error updating shapes:', error);
-        }
+        const operation=document.getElementById('operation').value; if(!operation) return;
+        const res=await fetch(`${API_BASE}/api/geometry/operations/${encodeURIComponent(operation)}/shapes`);
+        const data=await res.json();
+        const selectA=document.getElementById('shapeA'); const selectB=document.getElementById('shapeB');
+        selectA.innerHTML='<option value="">Chọn hình A...</option>';
+        (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; selectA.appendChild(o); });
+        selectB.innerHTML='<option value="">Không có</option>';
+        if(!['Diện tích','Thể tích'].includes(operation)) { (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; selectB.appendChild(o); }); }
+        updateInputFields();
     }
 
-    function updateInputFields() {
-        const shapeA = document.getElementById('shapeA').value;
-        const shapeB = document.getElementById('shapeB').value;
-        updateShapeInputs('A', shapeA);
-        updateShapeInputs('B', shapeB);
-    }
+    function updateInputFields() { const a=document.getElementById('shapeA').value; const b=document.getElementById('shapeB').value; updateShapeInputs('A',a); updateShapeInputs('B',b); }
 
     function updateShapeInputs(group, shape) {
-        const container = document.getElementById(`inputs${group}`);
-        container.innerHTML = '';
-        if (!shape) { container.classList.remove('active'); return; }
-        container.classList.add('active');
-        if (shape === 'Điểm') {
-            container.innerHTML = `
-                <label>Tọa độ (x,y,z):</label>
-                <input type="text" id="point_input_${group}" placeholder="Ví dụ: 1,2,3">
-            `;
-        } else if (shape === 'Đường thẳng') {
-            container.innerHTML = `
-                <label>Điểm trên đường thẳng (x,y,z):</label>
-                <input type="text" id="line_A${group === 'A' ? '1' : '2'}_${group}" placeholder="Ví dụ: 0,0,0">
-                <label style="margin-top: 10px;">Vector chỉ phương (dx,dy,dz):</label>
-                <input type="text" id="line_X${group === 'A' ? '1' : '2'}_${group}" placeholder="Ví dụ: 1,1,1">
-            `;
-        } else if (shape === 'Mặt phẳng') {
-            container.innerHTML = `
-                <label>Hệ số a:</label>
-                <input type="text" id="plane_a_${group}" placeholder="Ví dụ: 1">
-                <label>Hệ số b:</label>
-                <input type="text" id="plane_b_${group}" placeholder="Ví dụ: 1">
-                <label>Hệ số c:</label>
-                <input type="text" id="plane_c_${group}" placeholder="Ví dụ: 1">
-                <label>Hằng số d:</label>
-                <input type="text" id="plane_d_${group}" placeholder="Ví dụ: 0">
-            `;
-        } else if (shape === 'Đường tròn') {
-            container.innerHTML = `
-                <label>Tâm đường tròn (x,y):</label>
-                <input type="text" id="circle_center_${group}" placeholder="Ví dụ: 0,0">
-                <label style="margin-top: 10px;">Bán kính:</label>
-                <input type="text" id="circle_radius_${group}" placeholder="Ví dụ: 5">
-            `;
-        } else if (shape === 'Mặt cầu') {
-            container.innerHTML = `
-                <label>Tâm mặt cầu (x,y,z):</label>
-                <input type="text" id="sphere_center_${group}" placeholder="Ví dụ: 0,0,0">
-                <label style="margin-top: 10px;">Bán kính:</label>
-                <input type="text" id="sphere_radius_${group}" placeholder="Ví dụ: 3">
-            `;
-        }
+        const c=document.getElementById(`inputs${group}`); c.innerHTML=''; if(!shape){c.classList.remove('active');return;} c.classList.add('active');
+        if(shape==='Điểm'){ c.innerHTML=`<label>Tọa độ (x,y,z):</label><input type="text" id="point_input_${group}" placeholder="Ví dụ: 1,2,3">`; }
+        else if(shape==='Đường thẳng'){ c.innerHTML=`<label>Điểm trên đường thẳng (x,y,z):</label><input type="text" id="line_A${group==='A'?'1':'2'}_${group}" placeholder="Ví dụ: 0,0,0"><label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label><input type="text" id="line_X${group==='A'?'1':'2'}_${group}" placeholder="Ví dụ: 1,1,1">`; }
+        else if(shape==='Mặt phẳng'){ c.innerHTML=`<label>Hệ số a:</label><input type="text" id="plane_a_${group}" placeholder="1"><label>Hệ số b:</label><input type="text" id="plane_b_${group}" placeholder="1"><label>Hệ số c:</label><input type="text" id="plane_c_${group}" placeholder="1"><label>Hằng số d:</label><input type="text" id="plane_d_${group}" placeholder="0">`; }
+        else if(shape==='Đường tròn'){ c.innerHTML=`<label>Tâm (x,y):</label><input type="text" id="circle_center_${group}" placeholder="0,0"><label style="margin-top:10px;">Bán kính:</label><input type="text" id="circle_radius_${group}" placeholder="5">`; }
+        else if(shape==='Mặt cầu'){ c.innerHTML=`<label>Tâm (x,y,z):</label><input type="text" id="sphere_center_${group}" placeholder="0,0,0"><label style="margin-top:10px;">Bán kính:</label><input type="text" id="sphere_radius_${group}" placeholder="3">`; }
     }
 
     function collectInputData(group, shape) {
-        const data = {};
-        if (shape === 'Điểm') {
-            const pointInput = document.getElementById(`point_input_${group}`);
-            if (pointInput) data.point_input = pointInput.value;
-        } else if (shape === 'Đường thẳng') {
-            const lineA = document.getElementById(`line_A${group === 'A' ? '1' : '2'}_${group}`);
-            const lineX = document.getElementById(`line_X${group === 'A' ? '1' : '2'}_${group}`);
-            if (lineA) data[`line_A${group === 'A' ? '1' : '2'}`] = lineA.value;
-            if (lineX) data[`line_X${group === 'A' ? '1' : '2'}`] = lineX.value;
-        } else if (shape === 'Mặt phẳng') {
-            ['a','b','c','d'].forEach(coeff => {
-                const input = document.getElementById(`plane_${coeff}_${group}`);
-                if (input) data[`plane_${coeff}`] = input.value;
-            });
-        } else if (shape === 'Đường tròn') {
-            const circleCenter = document.getElementById(`circle_center_${group}`);
-            const circleRadius = document.getElementById(`circle_radius_${group}`);
-            if (circleCenter) data.circle_center = circleCenter.value;
-            if (circleRadius) data.circle_radius = circleRadius.value;
-        } else if (shape === 'Mặt cầu') {
-            const sphereCenter = document.getElementById(`sphere_center_${group}`);
-            const sphereRadius = document.getElementById(`sphere_radius_${group}`);
-            if (sphereCenter) data.sphere_center = sphereCenter.value;
-            if (sphereRadius) data.sphere_radius = sphereRadius.value;
-        }
-        return data;
+        const d={}; if(shape==='Điểm'){ const v=document.getElementById(`point_input_${group}`); if(v) d.point_input=v.value; }
+        else if(shape==='Đường thẳng'){ const la=document.getElementById(`line_A${group==='A'?'1':'2'}_${group}`); const lx=document.getElementById(`line_X${group==='A'?'1':'2'}_${group}`); if(la) d[`line_A${group==='A'?'1':'2'}`]=la.value; if(lx) d[`line_X${group==='A'?'1':'2'}`]=lx.value; }
+        else if(shape==='Mặt phẳng'){ ['a','b','c','d'].forEach(k=>{ const el=document.getElementById(`plane_${k}_${group}`); if(el) d[`plane_${k}`]=el.value; }); }
+        else if(shape==='Đường tròn'){ const cc=document.getElementById(`circle_center_${group}`); const cr=document.getElementById(`circle_radius_${group}`); if(cc) d.circle_center=cc.value; if(cr) d.circle_radius=cr.value; }
+        else if(shape==='Mặt cầu'){ const sc=document.getElementById(`sphere_center_${group}`); const sr=document.getElementById(`sphere_radius_${group}`); if(sc) d.sphere_center=sc.value; if(sr) d.sphere_radius=sr.value; }
+        return d;
     }
 
     async function processGeometry() {
-        const operation = document.getElementById('operation').value;
-        const shapeA = document.getElementById('shapeA').value;
-        const shapeB = document.getElementById('shapeB').value;
-        const version = document.getElementById('version').value;
-        if (!operation || !shapeA) { showError('Vui lòng chọn phép toán và hình A.'); return; }
-        const dataA = collectInputData('A', shapeA);
-        const dataB = shapeB ? collectInputData('B', shapeB) : {};
-        const requestData = { operation, shape_A: shapeA, data_A: dataA, version };
-        if (shapeB) { requestData.shape_B = shapeB; requestData.data_B = dataB; }
-        document.getElementById('results').innerHTML = '<div class="loading">🔄 Đang xử lý...</div>';
-        document.getElementById('processBtn').disabled = true;
-        try {
-            const response = await fetch(`${API_BASE}/api/geometry/process`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
-            const result = await response.json();
-            if (result.status === 'success') displayResults(result.data);
-            else showError(result.message || 'Xử lý thất bại');
-        } catch (error) {
-            showError('Lỗi kết nối đến API: ' + error.message);
-            console.error('Processing error:', error);
-        } finally {
-            document.getElementById('processBtn').disabled = false;
-        }
+        const operation=document.getElementById('operation').value; const shapeA=document.getElementById('shapeA').value; const shapeB=document.getElementById('shapeB').value; const version=document.getElementById('version').value; if(!operation||!shapeA){ showError('Vui lòng chọn phép toán và hình A.'); return; }
+        const dataA=collectInputData('A',shapeA); const dataB=shapeB?collectInputData('B',shapeB):{}; const body={ operation, shape_A:shapeA, data_A:dataA, version }; if(shapeB){ body.shape_B=shapeB; body.data_B=dataB; }
+        document.getElementById('results').innerHTML='<div class="loading">🔄 Đang xử lý...</div>'; document.getElementById('processBtn').disabled=true;
+        try { const res=await fetch(`${API_BASE}/api/geometry/process`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}); const r=await res.json(); if(r.status==='success') displayResults(r.data); else showError(r.message||'Xử lý thất bại'); } catch(e){ showError('Lỗi kết nối đến API: '+e.message); } finally { document.getElementById('processBtn').disabled=false; }
     }
 
-    function displayResults(data) {
-        const resultsContainer = document.getElementById('results');
-        const keylogHtml = `
-            <div class="result-item">
-                <h4>🔑 Keylog (${data.version}):</h4>
-                <div class="keylog">
-                    ${data.keylog}
-                    <button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button>
-                </div>
-            </div>
-            <div class="result-item">
-                <h4>📝 Thông tin:</h4>
-                <p><strong>Phép toán:</strong> ${data.operation}</p>
-                <p><strong>Hình A:</strong> ${data.shape_A}</p>
-                ${data.shape_B ? `<p><strong>Hình B:</strong> ${data.shape_B}</p>` : ''}
-                <p><strong>Mã hóa A:</strong> [${(data.encoded_A || []).join(', ')}]</p>
-                ${(data.encoded_B && data.encoded_B.length > 0) ? `<p><strong>Mã hóa B:</strong> [${data.encoded_B.join(', ')}]</p>` : ''}
-            </div>
-            <div class="success">✅ Xử lý thành công! Sao chép keylog và nhập vào máy tính Casio.</div>
-        `;
-        resultsContainer.innerHTML = keylogHtml;
+    function displayResults(data) { const el=document.getElementById('results'); el.innerHTML=`<div class="result-item"><h4>🔑 Keylog (${data.version}):</h4><div class="keylog">${data.keylog}<button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button></div></div><div class="result-item"><h4>📝 Thông tin:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hình A:</strong> ${data.shape_A}</p>${data.shape_B?`<p><strong>Hình B:</strong> ${data.shape_B}</p>`:''}<p><strong>Mã hóa A:</strong> [${(data.encoded_A||[]).join(', ')}]</p>${(data.encoded_B&&data.encoded_B.length>0)?`<p><strong>Mã hóa B:</strong> [${data.encoded_B.join(', ')}]</p>`:''}</div><div class="success">✅ Xử lý thành công!</div>`; }
+    function showError(m){ document.getElementById('results').innerHTML=`<div class="error">❌ ${m}</div>`; }
+    function copyToClipboard(t){ navigator.clipboard.writeText(t).then(()=>{ const b=event.target; const o=b.textContent; b.textContent='Copied!'; b.style.background='#27ae60'; setTimeout(()=>{ b.textContent=o; b.style.background='#3498db'; },1500); }).catch(()=>alert('Không thể copy.')); }
+
+    const examples={ distance_points:{ operation:'Khoảng cách', shapeA:'Điểm', shapeB:'Điểm', dataA:{point_input:'1,2,3'}, dataB:{point_input:'4,5,6'} }, circle_area:{ operation:'Diện tích', shapeA:'Đường tròn', dataA:{circle_center:'0,0', circle_radius:'sqrt(5)'} }, sphere_volume:{ operation:'Thể tích', shapeA:'Mặt cầu', dataA:{ sphere_center:'0,0,0', sphere_radius:'3'} }, line_plane_intersection:{ operation:'Tương giao', shapeA:'Đường thẳng', shapeB:'Mặt phẳng', dataA:{ line_A1:'0,0,0', line_X1:'1,1,1' }, dataB:{ plane_a:'1', plane_b:'1', plane_c:'1', plane_d:'0' } } };
+
+    function loadExample(k){ const ex=examples[k]; if(!ex) return; document.getElementById('operation').value=ex.operation; updateShapeOptions().then(()=>{ document.getElementById('shapeA').value=ex.shapeA; if(ex.shapeB){ document.getElementById('shapeB').value=ex.shapeB; } updateInputFields(); setTimeout(()=>{ Object.entries(ex.dataA).forEach(([key,val])=>{ const i=document.getElementById(`${key}_A`); if(i) i.value=val; }); if(ex.dataB){ Object.entries(ex.dataB).forEach(([key,val])=>{ const i=document.getElementById(`${key}_B`); if(i) i.value=val; }); } },100); }); }
+
+    function readExcelFile(file){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=e=>{ try{ const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(ws,{defval:''}); resolve(json); }catch(err){ reject(err); } }; reader.onerror=reject; reader.readAsArrayBuffer(file); }); }
+
+    function findSimilarColumns(available, missing){ const sim=[]; missing.forEach(m=>{ available.forEach(a=>{ if(a.toLowerCase().includes(m.toLowerCase())||m.toLowerCase().includes(a.toLowerCase())) sim.push(a); }); }); return [...new Set(sim)]; }
+
+    function checkShapeColumns(columns, shape, group){ const res={ errors:[], warnings:[], suggestions:[] }; const t=SHAPE_TEMPLATES[shape]; if(!t){ res.errors.push(`Không hỗ trợ shape: ${shape}`); return res; } const missing=t.required_columns.filter(c=>{ const g=`${c}_${group}`; return !columns.includes(c)&&!columns.includes(g); }); if(missing.length>0){ let ok=false; if(t.alternative_columns){ for(const alt of t.alternative_columns){ const found=alt.every(c=> columns.includes(c)||columns.includes(`${c}_${group}`)); if(found){ ok=true; res.suggestions.push(`Tìm thấy format thay thế cho ${shape} (${group}): ${alt.join(', ')}`); break; } } } if(!ok){ res.errors.push(`${shape} (${group}) thiếu cột: ${missing.join(', ')}. ${t.description}`); const similar=findSimilarColumns(columns, missing); if(similar.length>0) res.suggestions.push(`Có thể bạn muốn dùng: ${similar.join(', ')}?`); } }
+        return res; }
+
+    function validateExcelStructure(jsonData, operation, shapeA, shapeB){ const out={ valid:true, errors:[], warnings:[], suggestions:[], detected_columns:[] }; if(!jsonData||jsonData.length===0){ out.valid=false; out.errors.push('File Excel trống hoặc không có dữ liệu'); return out; } const columns=Object.keys(jsonData[0]); out.detected_columns=columns; const va=checkShapeColumns(columns, shapeA, 'A'); out.errors.push(...va.errors); out.warnings.push(...va.warnings); out.suggestions.push(...va.suggestions); if(shapeB && !['Diện tích','Thể tích'].includes(operation)){ const vb=checkShapeColumns(columns, shapeB, 'B'); out.errors.push(...vb.errors); out.warnings.push(...vb.warnings); out.suggestions.push(...vb.suggestions); } out.valid=out.errors.length===0; return out; }
+
+    function checkDataQuality(json){ const q={ total_rows:json.length, empty_rows:0, incomplete_rows:0, valid_rows:0, issues:[] }; json.forEach((row,idx)=>{ const vals=Object.values(row); const empties=vals.filter(v=>!v||v.toString().trim()==='').length; if(empties===vals.length) q.empty_rows++; else if(empties>0){ q.incomplete_rows++; q.issues.push(`Dòng ${idx+1}: Thiếu ${empties} giá trị`); } else q.valid_rows++; }); return q; }
+
+    function displayValidationResults(v){ const c=document.getElementById('validationResults'); let h='<div class="validation-summary">'; h+= v.valid?'<div class="validation-success">✅ File Excel hợp lệ!</div>':'<div class="validation-error">❌ File Excel có vấn đề</div>'; h+=`<div class="detected-columns"><h5>📋 Các cột:</h5><div class="column-list">${v.detected_columns.join(', ')}</div></div>`; if(v.errors.length>0){ h+='<div class="validation-errors"><h5>🚨 Lỗi:</h5><ul>'; v.errors.forEach(e=>h+=`<li>${e}</li>`); h+='</ul></div>'; } if(v.suggestions.length>0){ h+='<div class="validation-suggestions"><h5>💡 Gợi ý:</h5><ul>'; v.suggestions.forEach(s=>h+=`<li>${s}</li>`); h+='</ul></div>'; } h+='</div>'; c.innerHTML=h; }
+
+    function displayQualityReport(q){ const c=document.getElementById('fileDetails'); c.innerHTML+=`<p><strong>Tổng dòng:</strong> ${q.total_rows}</p><p><strong>Dòng rỗng:</strong> ${q.empty_rows}</p><p><strong>Dòng thiếu dữ liệu:</strong> ${q.incomplete_rows}</p><p><strong>Dòng hợp lệ:</strong> ${q.valid_rows}</p>`; }
+
+    function displayPreview(rows){ const p=document.getElementById('previewTable'); if(!rows||rows.length===0){ p.innerHTML=''; return; } const cols=Object.keys(rows[0]); let html='<h5>Preview (5 dòng đầu):</h5><table class="preview-table"><thead><tr>'; cols.forEach(c=> html+=`<th>${c}</th>` ); html+='</tr></thead><tbody>'; rows.forEach(r=>{ html+='<tr>'; cols.forEach(c=> html+=`<td>${r[c]??''}</td>` ); html+='</tr>'; }); html+='</tbody></table>'; p.innerHTML=html; }
+
+    async function handleExcelLocal(){ const file=document.getElementById('excelFile').files[0]; if(!file) return; try{ const json=await readExcelFile(file); excelJsonData=json; const opSel=document.getElementById('operation'); const shA=document.getElementById('shapeA'); const shB=document.getElementById('shapeB'); const operation=opSel.value; const shapeA=shA.value; const shapeB=shB.value; document.getElementById('fileInfo').style.display='block'; document.getElementById('processingConfig').style.display='block'; populateBatchConfig(); const validation=validateExcelStructure(json, operation, shapeA, shapeB); const quality=checkDataQuality(json); displayValidationResults(validation); displayQualityReport(quality); displayPreview(json.slice(0,5)); document.getElementById('processBatchBtn').disabled=!validation.valid; } catch(e){ showError('Không đọc được file Excel: '+e.message); } }
+
+    function populateBatchConfig(){ document.getElementById('batchOperation').innerHTML=document.getElementById('operation').innerHTML; document.getElementById('batchShapeA').innerHTML=document.getElementById('shapeA').innerHTML; document.getElementById('batchShapeB').innerHTML=document.getElementById('shapeB').innerHTML; }
+
+    function extractShapeData(row, shape, group){ const d={}; if(!shape) return d; if(shape==='Điểm'){ if(row[`point_input_${group}`]||row.point_input) d.point_input=(row[`point_input_${group}`]||row.point_input); else if(row.x&&row.y) d.point_input=[row.x,row.y,row.z].filter(Boolean).join(','); }
+        else if(shape==='Đường thẳng'){ const p=row[`line_A${group==='A'?1:2}_${group}`]||row[`line_A${group==='A'?1:2}`]||row.line_point; const v=row[`line_X${group==='A'?1:2}_${group}`]||row[`line_X${group==='A'?1:2}`]||row.line_vector; if(p) d[`line_A${group==='A'?1:2}`]=p; if(v) d[`line_X${group==='A'?1:2}`]=v; }
+        else if(shape==='Mặt phẳng'){ ['a','b','c','d'].forEach(k=>{ const v=row[`plane_${k}_${group}`]??row[`plane_${k}`]; if(v!==undefined&&v!=='') d[`plane_${k}`]=v; }); }
+        else if(shape==='Đường tròn'){ const c=row[`circle_center_${group}`]||row.circle_center||([row.center_x,row.center_y].every(v=>v!==undefined)?`${row.center_x},${row.center_y}`:undefined); const r=row[`circle_radius_${group}`]||row.circle_radius||row.radius; if(c) d.circle_center=c; if(r) d.circle_radius=r; }
+        else if(shape==='Mặt cầu'){ const c=row[`sphere_center_${group}`]||row.sphere_center||([row.center_x,row.center_y,row.center_z].every(v=>v!==undefined)?`${row.center_x},${row.center_y},${row.center_z}`:undefined); const r=row[`sphere_radius_${group}`]||row.sphere_radius||row.radius; if(c) d.sphere_center=c; if(r) d.sphere_radius=r; }
+        return d; }
+
+    async function processBatchFE(){ const op=document.getElementById('batchOperation').value; const sA=document.getElementById('batchShapeA').value; const sB=document.getElementById('batchShapeB').value; if(!op||!sA||excelJsonData.length===0){ showError('Thiếu dữ liệu batch'); return; }
+        const calculations=excelJsonData.map(row=>({ operation:op, shape_A:sA, data_A:extractShapeData(row, sA, 'A'), shape_B:sB||undefined, data_B:sB?extractShapeData(row, sB, 'B'):undefined }));
+        document.getElementById('batchProgress').style.display='block'; let p=0; const it=setInterval(()=>{ p=Math.min(90,p+10); updateProgress(p); },400);
+        try{ const res=await fetch(`${API_BASE}/api/geometry/batch`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({calculations}) }); const r=await res.json(); clearInterval(it); updateProgress(100); document.getElementById('batchResults').style.display='block'; const ok=r.data.filter(x=>!!x).length; const err=(r.error_details||[]).length; document.getElementById('batchSummary').innerHTML=`<p><strong>Tổng:</strong> ${r.total_processed||calculations.length}</p><p><strong>Thành công:</strong> ${ok}</p><p><strong>Lỗi:</strong> ${err}</p>`; exportResultsToExcel(r); } catch(e){ clearInterval(it); showError('Batch lỗi: '+e.message); }
     }
 
-    function showError(message) {
-        const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = `<div class="error">❌ ${message}</div>`;
-    }
-
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = 'Copied!';
-            btn.style.background = '#27ae60';
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.background = '#3498db';
-            }, 1500);
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            alert('Không thể copy. Vui lòng copy thủ công.');
-        });
-    }
-
-    const examples = {
-        distance_points: {
-            operation: 'Khoảng cách',
-            shapeA: 'Điểm',
-            shapeB: 'Điểm',
-            dataA: { point_input: '1,2,3' },
-            dataB: { point_input: '4,5,6' }
-        },
-        circle_area: {
-            operation: 'Diện tích',
-            shapeA: 'Đường tròn',
-            dataA: { circle_center: '0,0', circle_radius: 'sqrt(5)' }
-        },
-        sphere_volume: {
-            operation: 'Thể tích',
-            shapeA: 'Mặt cầu',
-            dataA: { sphere_center: '0,0,0', sphere_radius: '3' }
-        },
-        line_plane_intersection: {
-            operation: 'Tương giao',
-            shapeA: 'Đường thẳng',
-            shapeB: 'Mặt phẳng',
-            dataA: { line_A1: '0,0,0', line_X1: '1,1,1' },
-            dataB: { plane_a: '1', plane_b: '1', plane_c: '1', plane_d: '0' }
-        }
-    };
-
-    function loadExample(exampleKey) {
-        const example = examples[exampleKey];
-        if (!example) return;
-        document.getElementById('operation').value = example.operation;
-        updateShapeOptions().then(() => {
-            document.getElementById('shapeA').value = example.shapeA;
-            if (example.shapeB) {
-                document.getElementById('shapeB').value = example.shapeB;
-            }
-            updateInputFields();
-            setTimeout(() => {
-                Object.entries(example.dataA).forEach(([key, value]) => {
-                    const input = document.getElementById(`${key}_A`);
-                    if (input) input.value = value;
-                });
-                if (example.dataB) {
-                    Object.entries(example.dataB).forEach(([key, value]) => {
-                        const input = document.getElementById(`${key}_B`);
-                        if (input) input.value = value;
-                    });
-                }
-            }, 100);
-        });
-    }
-
-    async function handleFileUpload() {
-        const fileInput = document.getElementById('excelFile');
-        const file = fileInput.files[0];
-        if (!file) return;
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            const response = await fetch(`${API_BASE}/api/geometry/excel/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                currentFilePath = result.filepath;
-                currentFileName = result.filename;
-                displayFileInfo(result);
-            } else {
-                showError('Upload failed: ' + result.message);
-            }
-        } catch (error) {
-            showError('Upload error: ' + error.message);
-        }
-    }
-
-    function displayFileInfo(fileData) {
-        const fileInfo = document.getElementById('fileInfo');
-        const fileDetails = document.getElementById('fileDetails');
-        const previewTable = document.getElementById('previewTable');
-        fileDetails.innerHTML = `
-            <p><strong>Tên file:</strong> ${fileData.filename}</p>
-            <p><strong>Tổng số dòng:</strong> ${fileData.total_rows}</p>
-            <p><strong>Kích thước:</strong> ${fileData.file_size_mb} MB</p>
-        `;
-        let tableHtml = '<h5>Preview (5 dòng đầu):</h5><table class="preview-table"><thead><tr>';
-        fileData.columns.forEach(col => {
-            tableHtml += `<th>${col}</th>`;
-        });
-        tableHtml += '</tr></thead><tbody>';
-        fileData.preview.forEach(row => {
-            tableHtml += '<tr>';
-            fileData.columns.forEach(col => {
-                tableHtml += `<td>${row[col] || ''}</td>`;
-            });
-            tableHtml += '</tr>';
-        });
-        tableHtml += '</tbody></table>';
-        previewTable.innerHTML = tableHtml;
-        fileInfo.style.display = 'block';
-        document.getElementById('processingConfig').style.display = 'block';
-        populateBatchConfig();
-    }
-
-    function populateBatchConfig() {
-        document.getElementById('batchOperation').innerHTML = document.getElementById('operation').innerHTML;
-        document.getElementById('batchShapeA').innerHTML = document.getElementById('shapeA').innerHTML;
-        document.getElementById('batchShapeB').innerHTML = document.getElementById('shapeB').innerHTML;
-    }
-
-    async function processBatch() {
-        const operation = document.getElementById('batchOperation').value;
-        const shapeA = document.getElementById('batchShapeA').value;
-        const shapeB = document.getElementById('batchShapeB').value;
-        if (!operation || !shapeA || !currentFilePath) {
-            showError('Vui lòng chọn đầy đủ thông tin và upload file');
-            return;
-        }
-        const requestData = {
-            filepath: currentFilePath,
-            operation: operation,
-            shape_A: shapeA,
-            shape_B: shapeB || null
-        };
-        try {
-            showBatchProgress();
-            const response = await fetch(`${API_BASE}/api/geometry/excel/process`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                showBatchResults(result);
-            } else {
-                showError('Batch processing failed: ' + result.message);
-            }
-        } catch (error) {
-            showError('Processing error: ' + error.message);
-        }
-    }
-
-    function showBatchProgress() {
-        document.getElementById('batchProgress').style.display = 'block';
-        document.getElementById('processBatchBtn').disabled = true;
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 20;
-            if (progress >= 90) {
-                clearInterval(interval);
-                progress = 90;
-            }
-            updateProgress(progress);
-        }, 500);
-    }
-
-    function updateProgress(percent) {
-        const fill = document.getElementById('progressFill');
-        const text = document.getElementById('progressText');
-        fill.style.width = percent + '%';
-        text.textContent = Math.round(percent) + '%';
-    }
-
-    function showBatchResults(result) {
-        document.getElementById('batchProgress').style.display = 'none';
-        document.getElementById('batchResults').style.display = 'block';
-        const summary = document.getElementById('batchSummary');
-        summary.innerHTML = `
-            <p><strong>Đã xử lý:</strong> ${result.processed_rows} dòng</p>
-            <p><strong>Thành công:</strong> ${result.successful_rows} dòng</p>
-            <p><strong>Lỗi:</strong> ${result.error_count} dòng</p>
-            <p><strong>File kết quả:</strong> ${result.output_file}</p>
-        `;
-        if (result.errors && result.errors.length > 0) {
-            summary.innerHTML += '<p><strong>Chi tiết lỗi:</strong></p><ul>';
-            result.errors.slice(0, 5).forEach(error => {
-                summary.innerHTML += `<li>${error}</li>`;
-            });
-            if (result.errors.length > 5) {
-                summary.innerHTML += `<li>... và ${result.errors.length - 5} lỗi khác</li>`;
-            }
-            summary.innerHTML += '</ul>';
-        }
-        window.resultFilePath = result.output_file;
-    }
-
-    function downloadResult() {
-        if (window.resultFilePath) {
-            const filename = window.resultFilePath.split('/').pop();
-            window.open(`${API_BASE}/api/geometry/excel/download/${filename}`, '_blank');
-        }
+    function exportResultsToExcel(r){ try{ const rows=[]; for(let i=0;i<excelJsonData.length;i++){ const src=excelJsonData[i]; const item=r.data[i]; rows.push({ ...src, keylog: item && item.keylog ? item.keylog : '' }); } const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Results'); XLSX.writeFile(wb, 'geometry_results.xlsx'); } catch(e){ console.error('Export error:', e); }
     }
 
     window.addEventListener('load', initApp);
