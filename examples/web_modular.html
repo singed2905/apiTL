@@ -1,4 +1,4 @@
-<!-- Modular page, now loads global-expose script for UI JS functions -->
+<!-- Ensure shared helpers are loaded before other modules -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -110,6 +110,7 @@
     </div>
   </div>
 
+  <script src="assets/js/web_shared.js"></script>
   <script src="assets/js/web_core.js"></script>
   <script src="assets/js/web_excel.js"></script>
   <script src="assets/js/web_core_expose.js"></script>
