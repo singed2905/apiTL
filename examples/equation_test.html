@@ -7,20 +7,23 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
     .header { background: rgba(255,255,255,0.95); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     .header h1 { color: #1565C0; margin-bottom: 10px; }
     .card { background: rgba(255,255,255,0.95); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
     .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s; margin: 5px; }
     .btn-primary { background: #4CAF50; color: white; }
     .btn-primary:hover { background: #45a049; }
     .btn-secondary { background: #2196F3; color: white; }
     .btn-secondary:hover { background: #1976D2; }
     .btn-warning { background: #FF9800; color: white; }
     .btn-warning:hover { background: #F57C00; }
+    .btn-info { background: #17a2b8; color: white; }
+    .btn-info:hover { background: #138496; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
     .equation-inputs { display: none; }
     .equation-inputs.active { display: block; }
     .equation-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
@@ -29,31 +32,42 @@
     .results { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin-top: 15px; }
     .success { color: #28a745; font-weight: bold; }
     .error { color: #dc3545; font-weight: bold; }
+    .warning { color: #e65100; font-weight: bold; }
     .keylog { background: #e8f5e8; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; font-weight: bold; margin: 10px 0; word-break: break-all; }
     .copy-btn { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px; }
     .loading { text-align: center; color: #666; font-style: italic; }
     .guide { background: #E3F2FD; border-left: 4px solid #2196F3; padding: 15px; margin-bottom: 20px; }
+    .excel-section { background: #f0f8ff; border: 2px solid #2196F3; border-radius: 8px; padding: 15px; margin-top: 20px; }
+    .excel-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
+    .file-info { background: #e3f2fd; border: 1px solid #2196f3; border-radius: 6px; padding: 10px; margin: 10px 0; }
+    .progress { width: 100%; height: 16px; background-color: #ddd; border-radius: 8px; margin: 10px 0; display: none; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #2E86AB, #A23B72); border-radius: 8px; text-align: center; line-height: 16px; color: white; font-size: 11px; font-weight: bold; transition: width 0.3s ease; }
+    .log { background: #f5f5f5; border-radius: 6px; padding: 10px; font-family: 'Courier New', monospace; font-size: 12px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
+    .download-link { display: inline-block; padding: 8px 16px; background: #4caf50; color: white; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 5px; }
+    .download-link:hover { background: #45a049; text-decoration: none; }
+    input[type="file"] { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🧐 Equation Mode API Test</h1>
-      <p>Test cho API xử lý phương trình - Chuyển từ repo clone sang API</p>
+      <h1>🧮 Equation Mode API Test</h1>
+      <p>Test cho API xử lý phương trình - Chốt single + Excel batch processing</p>
     </div>
 
     <div class="guide">
       <h4>💡 Hướng dẫn:</h4>
       <ul>
-        <li>Chọn loại hệ phương trình (2, 3, hoặc 4 ẩn)</li>
-        <li>Nhập hệ số cách nhau bằng dấu phẩy: a11,a12,c1</li>
-        <li>Hỗ trợ LaTeX: sqrt(5), pi, 2^3, sin(pi/2), 1/2</li>
-        <li>Kết quả: keylog Casio + nghiệm + thông tin ma trận</li>
+        <li><strong>Single processing:</strong> Chọn loại hệ phương trình (2, 3, hoặc 4 ẩn) và nhập hệ số</li>
+        <li><strong>Excel processing:</strong> Tải template → Điền dữ liệu → Upload → Kiểm tra → Xử lý</li>
+        <li><strong>Hệ số:</strong> Cách nhau bằng dấu phẩy: a11,a12,c1</li>
+        <li><strong>Hỗ trợ LaTeX:</strong> sqrt(5), pi, 2^3, sin(pi/2), 1/2</li>
+        <li><strong>Kết quả:</strong> keylog Casio + nghiệm + thông tin ma trận</li>
       </ul>
     </div>
 
     <div class="card">
-      <h3>📝 Cấu hình</h3>
+      <h3>📋 Cấu hình</h3>
       <div class="form-group">
         <label for="operation">Loại hệ phương trình:</label>
         <select id="operation" onchange="onOperationChange()">
@@ -73,10 +87,32 @@
           <option value="fx803">Casio fx-803</option>
         </select>
       </div>
+      
+      <!-- EXCEL ACTIONS -->
+      <div class="excel-section">
+        <h4>📊 Excel Batch Processing</h4>
+        <div class="excel-actions">
+          <button class="btn btn-info" onclick="downloadTemplate()">📋 Tải Template Excel</button>
+          <button class="btn btn-secondary" onclick="triggerExcelInput()">📤 Import Excel File</button>
+          <button id="validateBtn" class="btn btn-warning" onclick="validateFile()" disabled>✅ Kiểm tra cấu trúc</button>
+          <button id="processExcelBtn" class="btn btn-primary" onclick="processExcelFile()" disabled>🚀 Xử lý Excel</button>
+        </div>
+        
+        <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="uploadFile()" />
+        
+        <div id="progress" class="progress">
+          <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+        </div>
+        
+        <div id="fileInfo"></div>
+        <div id="excelResults"></div>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()" style="padding: 5px 10px; margin-top: 5px;">🗑️ Xóa log</button>
+      </div>
     </div>
 
     <div class="card equation-inputs" id="equationInputs">
-      <h3>📊 Nhập hệ số</h3>
+      <h3>📝 Nhập hệ số (Single)</h3>
       <div id="inputFields"></div>
       <button class="btn btn-primary" onclick="processEquation()" id="processBtn">🚀 Xử lý phương trình</button>
     </div>
@@ -107,7 +143,9 @@
     };
 
     let currentTemplate = null;
+    let uploadedFilePath = '';
 
+    // ===== SINGLE EQUATION PROCESSING =====
     function onOperationChange(){
       const operation = document.getElementById('operation').value;
       const vars = operation.includes('2') ? 2 : operation.includes('3') ? 3 : operation.includes('4') ? 4 : 0;
@@ -164,17 +202,284 @@
     function displayResults(data){
       const el=document.getElementById('results');
       el.innerHTML=`<div class="success">✅ Xử lý thành công!</div>
-      <div style=\"margin: 15px 0;\"><h4>🔑 Keylog (${data.version}):</h4><div class=\"keylog\">${data.keylog}<button class=\"copy-btn\" onclick=\"copyToClipboard('${data.keylog}')\">Copy</button></div></div>
-      <div style=\"margin: 15px 0;\"><h4>🎯 Nghiệm:</h4><p><strong>${data.solutions}</strong></p></div>
-      <div style=\"margin: 15px 0;\"><h4>📝 Thông tin chi tiết:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hệ số đã mã hóa:</strong> [${data.encoded_coefficients.join(', ')}]</p><p><strong>Rank ma trận A:</strong> ${data.matrix_info.rank_A}</p><p><strong>Rank ma trận mở rộng:</strong> ${data.matrix_info.rank_augmented}</p><p><strong>Determinant:</strong> ${Number(data.matrix_info.determinant).toFixed(6)}</p></div>`;
+      <div style="margin: 15px 0;"><h4>🔑 Keylog (${data.version}):</h4><div class="keylog">${data.keylog}<button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button></div></div>
+      <div style="margin: 15px 0;"><h4>🎯 Nghiệm:</h4><p><strong>${data.solutions}</strong></p></div>
+      <div style="margin: 15px 0;"><h4>📝 Thông tin chi tiết:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hệ số đã mã hóa:</strong> [${data.encoded_coefficients.join(', ')}]</p><p><strong>Rank ma trận A:</strong> ${data.matrix_info.rank_A}</p><p><strong>Rank ma trận mở rộng:</strong> ${data.matrix_info.rank_augmented}</p><p><strong>Determinant:</strong> ${Number(data.matrix_info.determinant).toFixed(6)}</p></div>`;
     }
 
+    // ===== EXCEL PROCESSING =====
+    function log(message, type = 'info') {
+      const logDiv = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+      logEntry.style.color = type === 'error' ? '#d32f2f' : type === 'success' ? '#388e3c' : type === 'warning' ? '#f57c00' : '#666';
+      logDiv.appendChild(logEntry);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+    }
+    
+    function triggerExcelInput() {
+      document.getElementById('excelFile').click();
+    }
+    
+    async function downloadTemplate() {
+      try {
+        const operation = document.getElementById('operation').value;
+        if (!operation) {
+          log('❌ Vui lòng chọn loại phương trình trước!', 'error');
+          return;
+        }
+        
+        log(`📋 Đang tải template cho: ${operation}`, 'info');
+        
+        const alias = TEMPLATE_ALIAS[operation];
+        if (!alias) {
+          log('❌ Không tìm thấy template cho operation này', 'error');
+          return;
+        }
+        
+        const url = `${API_BASE}/api/equation/excel/template/${alias}`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `template_${alias}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        log(`✅ Đã tải template thành công!`, 'success');
+        
+      } catch (error) {
+        log(`❌ Lỗi tải template: ${error.message}`, 'error');
+      }
+    }
+    
+    async function uploadFile() {
+      const fileInput = document.getElementById('excelFile');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        log('❌ Vui lòng chọn file Excel!', 'error');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        log(`📤 Đang upload file: ${file.name}`, 'info');
+        
+        const response = await fetch(`${API_BASE}/api/equation/excel/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          uploadedFilePath = result.data.filepath;
+          log(`✅ Upload thành công!`, 'success');
+          
+          // Display file info
+          displayFileInfo(result.data.file_info);
+          
+          // Enable validation button
+          document.getElementById('validateBtn').disabled = false;
+          
+        } else {
+          log(`❌ Upload thất bại: ${result.message}`, 'error');
+        }
+        
+      } catch (error) {
+        log(`❌ Lỗi upload: ${error.message}`, 'error');
+      }
+    }
+    
+    function displayFileInfo(fileInfo) {
+      const infoDiv = document.getElementById('fileInfo');
+      const isLarge = fileInfo.is_large_file || false;
+      
+      let infoHTML = `
+        <div class="file-info ${isLarge ? 'warning' : ''}">
+          <h4>📄 ${fileInfo.file_name}</h4>
+          <p><strong>Số dòng:</strong> ${fileInfo.total_rows ? fileInfo.total_rows.toLocaleString() : 'N/A'} | 
+             <strong>Số cột:</strong> ${fileInfo.total_columns || 0} | 
+             <strong>Kích thước:</strong> ${(fileInfo.file_size_mb || 0).toFixed(2)} MB</p>
+          <p><strong>Cột có sẵn:</strong> ${fileInfo.columns ? fileInfo.columns.join(', ') : 'N/A'}</p>
+      `;
+      
+      if (isLarge) {
+        infoHTML += `
+          <p><strong>⚠️ Cảnh báo:</strong> ${fileInfo.warning || 'File lớn'}</p>
+          <p><strong>Chunk size khuyến nghị:</strong> ${fileInfo.recommended_chunk_size || 500}</p>
+        `;
+      }
+      
+      infoHTML += `</div>`;
+      infoDiv.innerHTML = infoHTML;
+    }
+    
+    async function validateFile() {
+      if (!uploadedFilePath) {
+        log('❌ Chưa có file để kiểm tra!', 'error');
+        return;
+      }
+      
+      const operation = document.getElementById('operation').value;
+      
+      try {
+        log(`🔍 Đang kiểm tra cấu trúc file cho: ${operation}`, 'info');
+        
+        const response = await fetch(`${API_BASE}/api/equation/excel/validate`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            filepath: uploadedFilePath,
+            operation: operation
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          const data = result.data;
+          
+          log(`✅ Kiểm tra hoàn tất!`, 'success');
+          
+          if (data.is_large_file) {
+            log(`🔥 File lớn - chỉ kiểm tra cấu trúc cơ bản`, 'warning');
+            log(`📊 Kích thước: ${data.file_size_mb?.toFixed(1)}MB, Dòng ước tính: ${data.estimated_rows?.toLocaleString()}`, 'info');
+          } else {
+            const validation = data.validation_results;
+            log(`📊 Dòng có dữ liệu: ${validation.rows_with_data}/${validation.total_rows}`, 'info');
+            log(`⚠️ Dòng có lỗi: ${validation.rows_with_errors}`, validation.rows_with_errors > 0 ? 'error' : 'info');
+            
+            if (validation.data_issues && validation.data_issues.length > 0) {
+              validation.data_issues.forEach(issue => {
+                log(`❗ Dòng ${issue.row}: ${issue.issues.join(', ')}`, 'error');
+              });
+            }
+          }
+          
+          if (data.is_valid) {
+            document.getElementById('processExcelBtn').disabled = false;
+            log(`🎉 File hợp lệ, có thể xử lý!`, 'success');
+          } else {
+            const missing = data.missing_columns || data.validation_results?.missing_columns || [];
+            log(`❌ File không hợp lệ. Thiếu cột: ${missing.join(', ')}`, 'error');
+          }
+          
+        } else {
+          log(`❌ Kiểm tra thất bại: ${result.message}`, 'error');
+        }
+        
+      } catch (error) {
+        log(`❌ Lỗi kiểm tra: ${error.message}`, 'error');
+      }
+    }
+    
+    async function processExcelFile() {
+      if (!uploadedFilePath) {
+        log('❌ Chưa có file để xử lý!', 'error');
+        return;
+      }
+      
+      const operation = document.getElementById('operation').value;
+      const version = document.getElementById('version').value;
+      
+      try {
+        log(`🚀 Đang xử lý Excel với ${operation} - ${version}`, 'info');
+        
+        // Show progress bar
+        showProgress(0, 'Đang khởi tạo...');
+        
+        const response = await fetch(`${API_BASE}/api/equation/excel/process`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            filepath: uploadedFilePath,
+            operation: operation,
+            version: version
+          })
+        });
+        
+        showProgress(100, 'Hoàn tất!');
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          const data = result.data;
+          
+          log(`✅ Xử lý thành công!`, 'success');
+          log(`📊 Đã xử lý: ${data.processed_count} dòng`, 'success');
+          log(`❌ Lỗi: ${data.error_count} dòng`, data.error_count > 0 ? 'error' : 'info');
+          
+          // Show download link
+          displayExcelResults(data);
+          
+        } else {
+          log(`❌ Xử lý thất bại: ${result.message}`, 'error');
+        }
+        
+        // Hide progress bar after 2 seconds
+        setTimeout(() => {
+          hideProgress();
+        }, 2000);
+        
+      } catch (error) {
+        log(`❌ Lỗi xử lý: ${error.message}`, 'error');
+        hideProgress();
+      }
+    }
+    
+    function showProgress(percent, message) {
+      document.getElementById('progress').style.display = 'block';
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = percent + '%';
+      progressBar.textContent = message || `${percent}%`;
+    }
+    
+    function hideProgress() {
+      document.getElementById('progress').style.display = 'none';
+    }
+    
+    function displayExcelResults(data) {
+      const resultsDiv = document.getElementById('excelResults');
+      const total = (data.processed_count || 0) + (data.error_count || 0);
+      const successRate = total ? (data.processed_count / total * 100).toFixed(1) : '0.0';
+      
+      resultsDiv.innerHTML = `
+        <div style="background:#e8f5e8;border:1px solid #4caf50;border-radius:8px;padding:15px;margin-top:15px;">
+          <h4>🎉 Excel xử lý hoàn tất!</h4>
+          <p><strong>Thành công:</strong> ${data.processed_count || 0} dòng</p>
+          <p><strong>Lỗi:</strong> ${data.error_count || 0} dòng</p>
+          <p><strong>Tỷ lệ thành công:</strong> ${successRate}%</p>
+          <a href="${API_BASE}/api/equation/excel/download/${data.output_file}" 
+             class="download-link" 
+             download="${data.output_file}">
+            💾 Tải file kết quả Excel
+          </a>
+        </div>
+      `;
+    }
+
+    // ===== HELPER FUNCTIONS =====
     function showError(m){ document.getElementById('results').innerHTML=`<div class="error">❌ ${m}</div>`; }
     function setLoading(on){ const btn=document.getElementById('processBtn'); btn.disabled=on; if(on){ document.getElementById('results').innerHTML='<div class="loading">🔄 Đang xử lý...</div>'; } }
     function copyToClipboard(t){ navigator.clipboard.writeText(t).then(()=>{ const b=event.target; const o=b.textContent; b.textContent='Copied!'; b.style.background='#27ae60'; setTimeout(()=>{ b.textContent=o; b.style.background='#3498db'; },1500); }).catch(()=>alert('Không thể copy.')); }
 
     function loadExample2x2(){ document.getElementById('operation').value='Hệ phương trình 2 ẩn'; onOperationChange(); setTimeout(()=>{ const e0=document.getElementById('equation_0'); const e1=document.getElementById('equation_1'); if(e0) e0.value='2, 3, 7'; if(e1) e1.value='1, -1, 1'; },100); }
     function loadExample3x3(){ document.getElementById('operation').value='Hệ phương trình 3 ẩn'; onOperationChange(); setTimeout(()=>{ const e0=document.getElementById('equation_0'); const e1=document.getElementById('equation_1'); const e2=document.getElementById('equation_2'); if(e0) e0.value='1, 2, 1, 8'; if(e1) e1.value='2, -1, sqrt(4), 3'; if(e2) e2.value='1, 1, -1, pi'; },100); }
+    
+    // Initialize
+    window.onload = function() {
+      log('🚀 ConvertKeylogApp Equation Mode (Single + Excel) ready!', 'success');
+      log('📋 Single: Chọn operation → Nhập hệ số → Xử lý', 'info');
+      log('📊 Excel: Chọn operation → Tải template → Upload → Kiểm tra → Xử lý', 'info');
+    };
   </script>
 </body>
 </html>
