@@ -1,4 +1,4 @@
-<!-- Ensure parse module is loaded before vis2d3d.js -->
+<!-- Load math_eval.js before web_parse.js -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -67,7 +67,7 @@
       <div class="examples-section">
         <h3>💡 Ví dụ nhanh</h3>
         <p style="margin-bottom: 15px;">Nhấn vào một ví dụ để tự động điền dữ liệu:</p>
-        <button class="example-btn" onclick="document.getElementById('operation').value='Khoảng cách'; updateShapeOptions(); setTimeout(()=>{document.getElementById('shapeA').value='Điểm'; document.getElementById('shapeB').value='Điểm'; updateInputFields(); setTimeout(()=>{ const A=document.getElementById('point_input_A'); const B=document.getElementById('point_input_B'); if(A) A.value='1,2'; if(B) B.value='4,5'; updateVisualization(); },100); },100);">Khoảng cách 2 điểm</button>
+        <button class="example-btn" onclick="document.getElementById('operation').value='Khoảng cách'; updateShapeOptions(); setTimeout(()=>{document.getElementById('shapeA').value='Điểm'; document.getElementById('shapeB').value='Điểm'; updateInputFields(); setTimeout(()=>{ const A=document.getElementById('point_input_A'); const B=document.getElementById('point_input_B'); if(A) A.value='1, sqrt(5)'; if(B) B.value='4, 5/2'; updateVisualization(); },100); },100);">Khoảng cách 2 điểm (sqrt, phân số)</button>
       </div>
 
       <div class="excel-section">
@@ -118,6 +118,7 @@
   </div>
 
   <script src="assets/js/web_shared.js"></script>
+  <script src="assets/js/math_eval.js"></script>
   <script src="assets/js/web_core.js"></script>
   <script src="assets/js/web_parse.js"></script>
   <script src="assets/js/vis2d3d.js"></script>
