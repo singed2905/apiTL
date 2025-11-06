@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from geometry_api import GeometryAPI
+from equation_api import equation_bp
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
@@ -12,6 +13,9 @@ CORS(app)  # Enable CORS for web integration
 
 # Initialize Geometry API
 geometry_api = GeometryAPI()
+
+# Register equation API blueprint
+app.register_blueprint(equation_bp, url_prefix='/api/equation')
 
 # Configure upload settings
 UPLOAD_FOLDER = tempfile.gettempdir()
@@ -83,21 +87,30 @@ def home():
     """API health check endpoint"""
     return jsonify({
         'status': 'success',
-        'message': 'ConvertKeylogApp Geometry API is running',
-        'version': '1.1.0',
+        'message': 'ConvertKeylogApp Multi-Mode API is running',
+        'version': '1.2.0',
         'timestamp': datetime.now().isoformat(),
-        'available_endpoints': [
-            '/api/geometry/shapes',
-            '/api/geometry/operations', 
-            '/api/geometry/process',
-            '/api/geometry/batch',
-            '/api/geometry/template',
-            '/api/geometry/excel/upload',
-            '/api/geometry/excel/process',
-            '/api/geometry/excel/download'
-        ]
+        'available_endpoints': {
+            'geometry': [
+                '/api/geometry/shapes',
+                '/api/geometry/operations', 
+                '/api/geometry/process',
+                '/api/geometry/batch',
+                '/api/geometry/template',
+                '/api/geometry/excel/upload',
+                '/api/geometry/excel/process',
+                '/api/geometry/excel/download'
+            ],
+            'equation': [
+                '/api/equation/operations',
+                '/api/equation/templates/<operation>',
+                '/api/equation/process',
+                '/api/equation/batch'
+            ]
+        }
     })
 
+# Geometry API endpoints (existing)
 @app.route('/api/geometry/shapes', methods=['GET'])
 def get_available_shapes():
     """Get list of available geometric shapes"""
@@ -246,7 +259,7 @@ def process_batch():
             'message': f'Batch processing error: {str(e)}'
         }), 500
 
-# Excel Processing Endpoints
+# Excel Processing Endpoints (existing - keeping for geometry)
 @app.route('/api/geometry/excel/upload', methods=['POST'])
 def upload_excel():
     """Upload and validate Excel file"""
@@ -490,20 +503,28 @@ def not_found(error):
     return jsonify({
         'status': 'error',
         'message': 'Endpoint not found',
-        'available_endpoints': [
-            'GET /',
-            'GET /api/geometry/shapes',
-            'GET /api/geometry/operations',
-            'GET /api/geometry/operations/<operation>/shapes',
-            'POST /api/geometry/process',
-            'POST /api/geometry/batch',
-            'POST /api/geometry/excel/upload',
-            'POST /api/geometry/excel/process',
-            'GET /api/geometry/excel/download/<filename>',
-            'GET /api/geometry/template/<shape_a>',
-            'GET /api/geometry/template/<shape_a>/<shape_b>',
-            'POST /api/geometry/validate'
-        ]
+        'available_endpoints': {
+            'geometry': [
+                'GET /',
+                'GET /api/geometry/shapes',
+                'GET /api/geometry/operations',
+                'GET /api/geometry/operations/<operation>/shapes',
+                'POST /api/geometry/process',
+                'POST /api/geometry/batch',
+                'POST /api/geometry/excel/upload',
+                'POST /api/geometry/excel/process',
+                'GET /api/geometry/excel/download/<filename>',
+                'GET /api/geometry/template/<shape_a>',
+                'GET /api/geometry/template/<shape_a>/<shape_b>',
+                'POST /api/geometry/validate'
+            ],
+            'equation': [
+                'GET /api/equation/operations',
+                'GET /api/equation/templates/<operation>',
+                'POST /api/equation/process',
+                'POST /api/equation/batch'
+            ]
+        }
     }), 404
 
 @app.errorhandler(413)
@@ -524,10 +545,12 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'True').lower() == 'true'
     
-    print(f"🚀 Starting ConvertKeylogApp Geometry API...")
+    print(f"🚀 Starting ConvertKeylogApp Multi-Mode API...")
     print(f"📍 Port: {port}")
     print(f"🔧 Debug mode: {debug}")
     print(f"📋 Available at: http://localhost:{port}")
+    print(f"📐 Geometry API: /api/geometry/*")
+    print(f"📝 Equation API: /api/equation/*")
     print(f"📊 Excel processing enabled with {UPLOAD_FOLDER}")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
