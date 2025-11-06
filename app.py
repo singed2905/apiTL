@@ -47,20 +47,28 @@ def list_examples():
 @app.route('/')
 def home():
     endpoints = {
-        'examples': ['/examples/', '/examples/equation_test.html', '/examples/web_modular.html', '/examples/web_example.html'],
+        'examples': ['/examples/', '/examples/equation_test.html', '/examples/equation_excel_test.html', '/examples/web_modular.html', '/examples/web_example.html'],
         'geometry': [
             '/api/geometry/shapes', '/api/geometry/operations', '/api/geometry/process', '/api/geometry/batch',
             '/api/geometry/template/<shape_a>', '/api/geometry/template/<shape_a>/<shape_b>',
             '/api/geometry/excel/upload', '/api/geometry/excel/process', '/api/geometry/excel/download/<filename>'
         ],
-        'equation': ['/api/equation/operations', '/api/equation/templates/<operation>', '/api/equation/process', '/api/equation/batch'] if equation_bp else []
+        'equation': [
+            '/api/equation/operations', '/api/equation/templates/<operation>', 
+            '/api/equation/process', '/api/equation/batch',
+            # NEW EXCEL ENDPOINTS
+            '/api/equation/excel/upload', '/api/equation/excel/validate',
+            '/api/equation/excel/process', '/api/equation/excel/download/<filename>',
+            '/api/equation/excel/template/<operation>'
+        ] if equation_bp else []
     }
     return jsonify({
         'status': 'success',
         'message': 'ConvertKeylogApp Multi-Mode API is running',
-        'version': '1.2.1',
+        'version': '1.3.0',  # Updated version
         'timestamp': datetime.now().isoformat(),
-        'available_endpoints': endpoints
+        'available_endpoints': endpoints,
+        'new_features': ['Excel Import/Export for Equation Mode']  # Highlight new feature
     })
 
 # ========== Geometry Endpoints (guarded) ==========
@@ -172,5 +180,6 @@ if __name__ == '__main__':
     print(f"📍 Port: {port}")
     print(f"🔧 Debug mode: {debug}")
     print(f"📋 Available at: http://localhost:{port}")
-    print(f"🧪 Examples: http://localhost:{port}/examples/equation_test.html")
+    print(f"🧪 Examples: http://localhost:{port}/examples/")
+    print(f"📊 NEW: Excel Import/Export for Equation Mode!")
     app.run(host='0.0.0.0', port=port, debug=debug)
