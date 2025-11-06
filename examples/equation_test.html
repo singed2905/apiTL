@@ -98,7 +98,8 @@
   </div>
 
   <script>
-    const API_BASE = window.location.origin;
+    // Fallback để double-click file .html vẫn chạy được
+    const API_BASE = (window.location.protocol === 'file:') ? 'http://localhost:5000' : window.location.origin;
     const TEMPLATE_ALIAS = {
       'Hệ phương trình 2 ẩn': 'he-2-an',
       'Hệ phương trình 3 ẩn': 'he-3-an',
