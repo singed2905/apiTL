@@ -98,7 +98,13 @@
   </div>
 
   <script>
-    const API_BASE = window.location.origin; // luôn bám theo host của Flask
+    const API_BASE = window.location.origin;
+    const TEMPLATE_ALIAS = {
+      'Hệ phương trình 2 ẩn': 'he-2-an',
+      'Hệ phương trình 3 ẩn': 'he-3-an',
+      'Hệ phương trình 4 ẩn': 'he-4-an'
+    };
+
     let currentTemplate = null;
 
     function onOperationChange(){
@@ -111,9 +117,9 @@
 
     async function fetchTemplate(operation){
       if(!operation) return;
+      const alias = TEMPLATE_ALIAS[operation];
+      const url = alias ? `${API_BASE}/api/equation/templates/${alias}` : `${API_BASE}/api/equation/templates/${encodeURIComponent(operation)}`;
       try{
-        const url = `${API_BASE}/api/equation/templates/${encodeURIComponent(operation)}`;
-        console.log('GET template:', url);
         const res = await fetch(url);
         const result = await res.json();
         if(result.status==='success'){ currentTemplate=result.data; renderInputFields(currentTemplate); }
@@ -148,9 +154,7 @@
       const equations=[]; for(const input of inputs){ if(!input.value.trim()){ showError('Vui lòng nhập đủ hệ số.'); return; } equations.push(input.value.trim()); }
       setLoading(true);
       try{
-        const url = `${API_BASE}/api/equation/process`;
-        console.log('POST process:', url);
-        const res=await fetch(url,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({operation, equations, version})});
+        const res=await fetch(`${API_BASE}/api/equation/process`,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({operation, equations, version})});
         const result=await res.json();
         if(result.status==='success'){ displayResults(result.data); } else { showError(result.message||'Xử lý thất bại'); }
       }catch(e){ showError('Lỗi kết nối API: '+e.message); } finally { setLoading(false); }
