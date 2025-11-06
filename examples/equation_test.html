@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Equation Mode API Test - ConvertKeylogApp</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .header { background: rgba(255,255,255,0.95); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .header h1 { color: #1565C0; margin-bottom: 10px; }
+    .card { background: rgba(255,255,255,0.95); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+    .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+    .btn-primary { background: #4CAF50; color: white; }
+    .btn-primary:hover { background: #45a049; }
+    .btn-secondary { background: #2196F3; color: white; }
+    .btn-secondary:hover { background: #1976D2; }
+    .btn-warning { background: #FF9800; color: white; }
+    .btn-warning:hover { background: #F57C00; }
+    .equation-inputs { display: none; }
+    .equation-inputs.active { display: block; }
+    .equation-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+    .equation-row label { min-width: 120px; }
+    .equation-row input { flex: 1; }
+    .results { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin-top: 15px; }
+    .success { color: #28a745; font-weight: bold; }
+    .error { color: #dc3545; font-weight: bold; }
+    .keylog { background: #e8f5e8; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; font-weight: bold; margin: 10px 0; word-break: break-all; }
+    .copy-btn { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+    .loading { text-align: center; color: #666; font-style: italic; }
+    .guide { background: #E3F2FD; border-left: 4px solid #2196F3; padding: 15px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧐 Equation Mode API Test</h1>
+      <p>Test cho API xử lý phương trình - Chuyển từ repo clone sang API</p>
+    </div>
+
+    <div class="guide">
+      <h4>💡 Hướng dẫn:</h4>
+      <ul>
+        <li>Chọn loại hệ phương trình (2, 3, hoặc 4 ẩn)</li>
+        <li>Nhập hệ số cách nhau bằng dấu phẩy: a11,a12,c1</li>
+        <li>Hỗ trợ LaTeX: sqrt(5), pi, 2^3, sin(pi/2), 1/2</li>
+        <li>Kết quả: keylog Casio + nghiệm + thông tin ma trận</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>📝 Cấu hình</h3>
+      <div class="form-group">
+        <label for="operation">Loại hệ phương trình:</label>
+        <select id="operation" onchange="updateEquationInputs()">
+          <option value="">Chọn loại...</option>
+          <option value="Hệ phương trình 2 ẩn">Hệ phương trình 2 ẩn</option>
+          <option value="Hệ phương trình 3 ẩn">Hệ phương trình 3 ẩn</option>
+          <option value="Hệ phương trình 4 ẩn">Hệ phương trình 4 ẩn</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="version">Phiên bản máy tính:</label>
+        <select id="version">
+          <option value="fx799">Casio fx-799</option>
+          <option value="fx800">Casio fx-800</option>
+          <option value="fx801">Casio fx-801</option>
+          <option value="fx802">Casio fx-802</option>
+          <option value="fx803">Casio fx-803</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card equation-inputs" id="equationInputs">
+      <h3>📊 Nhập hệ số</h3>
+      <div id="inputFields"></div>
+      <button class="btn btn-primary" onclick="processEquation()" id="processBtn">🚀 Xử lý phương trình</button>
+    </div>
+
+    <div class="card">
+      <h3>📊 Kết quả</h3>
+      <div id="results">
+        <div class="loading">Chọn loại phương trình và nhập hệ số để xem kết quả...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💡 Ví dụ nhanh</h3>
+      <p>Nhấn để tự động điền dữ liệu:</p>
+      <br>
+      <button class="btn btn-secondary" onclick="loadExample2x2()">🔢 Ví dụ 2x2</button>
+      <button class="btn btn-warning" onclick="loadExample3x3()">🔣 Ví dụ 3x3 (LaTeX)</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:5000';
+    let currentTemplate = null;
+
+    async function updateEquationInputs() {
+      const operation = document.getElementById('operation').value;
+      const inputsDiv = document.getElementById('equationInputs');
+      const fieldsDiv = document.getElementById('inputFields');
+      
+      if (!operation) {
+        inputsDiv.classList.remove('active');
+        return;
+      }
+
+      try {
+        // Get template from API
+        const response = await fetch(`${API_BASE}/api/equation/templates/${encodeURIComponent(operation)}`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          currentTemplate = result.data;
+          renderInputFields(currentTemplate);
+          inputsDiv.classList.add('active');
+        } else {
+          showError('Không thể tải template: ' + result.message);
+        }
+      } catch (e) {
+        showError('Lỗi kết nối API: ' + e.message);
+      }
+    }
+
+    function renderInputFields(template) {
+      const fieldsDiv = document.getElementById('inputFields');
+      fieldsDiv.innerHTML = '';
+      
+      template.equations.forEach((eq, index) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'equation-row';
+        
+        const label = document.createElement('label');
+        label.textContent = eq.label;
+        rowDiv.appendChild(label);
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = `equation_${index}`;
+        input.placeholder = `Nhập ${eq.fields.join(', ')} cách nhau bằng dấu phẩy`;
+        rowDiv.appendChild(input);
+        
+        fieldsDiv.appendChild(rowDiv);
+      });
+    }
+
+    async function processEquation() {
+      const operation = document.getElementById('operation').value;
+      const version = document.getElementById('version').value;
+      
+      if (!operation || !currentTemplate) {
+        showError('Vui lòng chọn loại phương trình trước.');
+        return;
+      }
+
+      // Collect equations from inputs
+      const equations = [];
+      for (let i = 0; i < currentTemplate.variables; i++) {
+        const input = document.getElementById(`equation_${i}`);
+        if (!input || !input.value.trim()) {
+          showError(`Vui lòng nhập đủ hệ số cho phương trình ${i + 1}`);
+          return;
+        }
+        equations.push(input.value.trim());
+      }
+
+      setLoading(true);
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/equation/process`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            operation: operation,
+            equations: equations,
+            version: version
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          displayResults(result.data);
+        } else {
+          showError(result.message || 'Xử lý thất bại');
+        }
+        
+      } catch (e) {
+        showError('Lỗi kết nối API: ' + e.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function displayResults(data) {
+      const resultsDiv = document.getElementById('results');
+      
+      let html = `
+        <div class="success">✅ Xử lý thành công!</div>
+        <div style="margin: 15px 0;">
+          <h4>🔑 Keylog (${data.version}):</h4>
+          <div class="keylog">${data.keylog}<button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button></div>
+        </div>
+        <div style="margin: 15px 0;">
+          <h4>🎯 Nghiệm:</h4>
+          <p><strong>${data.solutions}</strong></p>
+        </div>
+        <div style="margin: 15px 0;">
+          <h4>📝 Thông tin chi tiết:</h4>
+          <p><strong>Phép toán:</strong> ${data.operation}</p>
+          <p><strong>Hệ số đã mã hóa:</strong> [${data.encoded_coefficients.join(', ')}]</p>
+          <p><strong>Rank ma trận A:</strong> ${data.matrix_info.rank_A}</p>
+          <p><strong>Rank ma trận mở rộng:</strong> ${data.matrix_info.rank_augmented}</p>
+          <p><strong>Determinant:</strong> ${data.matrix_info.determinant.toFixed(6)}</p>
+        </div>
+      `;
+      
+      resultsDiv.innerHTML = html;
+    }
+
+    function showError(message) {
+      document.getElementById('results').innerHTML = `<div class="error">❌ ${message}</div>`;
+    }
+
+    function setLoading(loading) {
+      const btn = document.getElementById('processBtn');
+      btn.disabled = loading;
+      if (loading) {
+        document.getElementById('results').innerHTML = '<div class="loading">🔄 Đang xử lý...</div>';
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#27ae60';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#3498db';
+        }, 1500);
+      }).catch(() => {
+        alert('Không thể copy vào clipboard.');
+      });
+    }
+
+    // Example data functions
+    function loadExample2x2() {
+      document.getElementById('operation').value = 'Hệ phương trình 2 ẩn';
+      updateEquationInputs().then(() => {
+        setTimeout(() => {
+          const eq1 = document.getElementById('equation_0');
+          const eq2 = document.getElementById('equation_1');
+          if (eq1) eq1.value = '2, 3, 7';  // 2x + 3y = 7
+          if (eq2) eq2.value = '1, -1, 1'; // x - y = 1
+        }, 100);
+      });
+    }
+
+    function loadExample3x3() {
+      document.getElementById('operation').value = 'Hệ phương trình 3 ẩn';
+      updateEquationInputs().then(() => {
+        setTimeout(() => {
+          const eq1 = document.getElementById('equation_0');
+          const eq2 = document.getElementById('equation_1');
+          const eq3 = document.getElementById('equation_2');
+          if (eq1) eq1.value = '1, 2, 1, 8';     // x + 2y + z = 8
+          if (eq2) eq2.value = '2, -1, sqrt(4), 3'; // 2x - y + 2z = 3
+          if (eq3) eq3.value = '1, 1, -1, pi';   // x + y - z = π
+        }, 100);
+      });
+    }
+
+    // Initialize on load
+    window.addEventListener('load', () => {
+      console.log('Equation Mode API Test ready');
+    });
+  </script>
+</body>
+</html>
