@@ -98,20 +98,14 @@
   </div>
 
   <script>
-    const API_BASE = 'http://localhost:5000';
+    const API_BASE = window.location.origin; // luôn bám theo host của Flask
     let currentTemplate = null;
 
     function onOperationChange(){
       const operation = document.getElementById('operation').value;
-      // Luôn render ô nhập theo mặc định để có thể nhập thủ công NGAY LẬP TỨC
       const vars = operation.includes('2') ? 2 : operation.includes('3') ? 3 : operation.includes('4') ? 4 : 0;
-      if(vars>0){
-        renderDefaultFields(vars);
-        document.getElementById('equationInputs').classList.add('active');
-      } else {
-        document.getElementById('equationInputs').classList.remove('active');
-      }
-      // Đồng thời gọi template API (không chặn UI). Nếu thành công sẽ cập nhật nhãn/placeholder.
+      if(vars>0){ renderDefaultFields(vars); document.getElementById('equationInputs').classList.add('active'); }
+      else { document.getElementById('equationInputs').classList.remove('active'); }
       fetchTemplate(operation);
     }
 
@@ -119,45 +113,30 @@
       if(!operation) return;
       try{
         const url = `${API_BASE}/api/equation/templates/${encodeURIComponent(operation)}`;
+        console.log('GET template:', url);
         const res = await fetch(url);
         const result = await res.json();
-        if(result.status==='success'){
-          currentTemplate = result.data;
-          renderInputFields(currentTemplate); // overwrite label/placeholder nếu có template
-          document.getElementById('equationInputs').classList.add('active');
-        } else {
-          // Không chặn, đã có default fields rồi
-          setStatus(`Không thể tải template: ${result.message}`);
-        }
-      } catch(e){
-        setStatus('Không thể kết nối template API: '+e.message);
-      }
+        if(result.status==='success'){ currentTemplate=result.data; renderInputFields(currentTemplate); }
+      }catch(e){ console.warn('Template fetch failed:', e.message); }
     }
 
     function renderDefaultFields(variables){
-      const fieldsDiv = document.getElementById('inputFields');
-      fieldsDiv.innerHTML='';
+      const fieldsDiv=document.getElementById('inputFields'); fieldsDiv.innerHTML='';
       for(let i=0;i<variables;i++){
-        const rowDiv=document.createElement('div');
-        rowDiv.className='equation-row';
-        const label=document.createElement('label');
-        label.textContent=`Phương trình ${i+1} (a.., c..):`;
-        const input=document.createElement('input');
-        input.type='text'; input.id=`equation_${i}`;
-        input.placeholder='Ví dụ: 2, 3, 7';
-        rowDiv.appendChild(label); rowDiv.appendChild(input);
-        fieldsDiv.appendChild(rowDiv);
+        const row=document.createElement('div'); row.className='equation-row';
+        const label=document.createElement('label'); label.textContent=`Phương trình ${i+1} (a.., c..):`;
+        const input=document.createElement('input'); input.type='text'; input.id=`equation_${i}`; input.placeholder='Ví dụ: 2, 3, 7';
+        row.appendChild(label); row.appendChild(input); fieldsDiv.appendChild(row);
       }
     }
 
     function renderInputFields(template){
-      const fieldsDiv = document.getElementById('inputFields');
-      fieldsDiv.innerHTML='';
+      const fieldsDiv=document.getElementById('inputFields'); fieldsDiv.innerHTML='';
       template.equations.forEach((eq, idx)=>{
-        const rowDiv=document.createElement('div'); rowDiv.className='equation-row';
-        const label=document.createElement('label'); label.textContent=eq.label; rowDiv.appendChild(label);
+        const row=document.createElement('div'); row.className='equation-row';
+        const label=document.createElement('label'); label.textContent=eq.label; row.appendChild(label);
         const input=document.createElement('input'); input.type='text'; input.id=`equation_${idx}`; input.placeholder=`Nhập ${eq.fields.join(', ')} cách nhau bằng dấu phẩy`;
-        rowDiv.appendChild(input); fieldsDiv.appendChild(rowDiv);
+        row.appendChild(input); fieldsDiv.appendChild(row);
       });
     }
 
@@ -165,12 +144,13 @@
       const operation=document.getElementById('operation').value;
       const version=document.getElementById('version').value;
       if(!operation){ showError('Vui lòng chọn loại phương trình trước.'); return; }
-      // Collect theo số ô hiện có (không phụ thuộc template)
       const inputs=document.querySelectorAll('#inputFields input');
       const equations=[]; for(const input of inputs){ if(!input.value.trim()){ showError('Vui lòng nhập đủ hệ số.'); return; } equations.push(input.value.trim()); }
       setLoading(true);
       try{
-        const res=await fetch(`${API_BASE}/api/equation/process`,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({operation, equations, version})});
+        const url = `${API_BASE}/api/equation/process`;
+        console.log('POST process:', url);
+        const res=await fetch(url,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({operation, equations, version})});
         const result=await res.json();
         if(result.status==='success'){ displayResults(result.data); } else { showError(result.message||'Xử lý thất bại'); }
       }catch(e){ showError('Lỗi kết nối API: '+e.message); } finally { setLoading(false); }
@@ -179,17 +159,15 @@
     function displayResults(data){
       const el=document.getElementById('results');
       el.innerHTML=`<div class="success">✅ Xử lý thành công!</div>
-      <div style="margin: 15px 0;"><h4>🔑 Keylog (${data.version}):</h4><div class="keylog">${data.keylog}<button class="copy-btn" onclick="copyToClipboard('${data.keylog}')">Copy</button></div></div>
-      <div style="margin: 15px 0;"><h4>🎯 Nghiệm:</h4><p><strong>${data.solutions}</strong></p></div>
-      <div style="margin: 15px 0;"><h4>📝 Thông tin chi tiết:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hệ số đã mã hóa:</strong> [${data.encoded_coefficients.join(', ')}]</p><p><strong>Rank ma trận A:</strong> ${data.matrix_info.rank_A}</p><p><strong>Rank ma trận mở rộng:</strong> ${data.matrix_info.rank_augmented}</p><p><strong>Determinant:</strong> ${Number(data.matrix_info.determinant).toFixed(6)}</p></div>`;
+      <div style=\"margin: 15px 0;\"><h4>🔑 Keylog (${data.version}):</h4><div class=\"keylog\">${data.keylog}<button class=\"copy-btn\" onclick=\"copyToClipboard('${data.keylog}')\">Copy</button></div></div>
+      <div style=\"margin: 15px 0;\"><h4>🎯 Nghiệm:</h4><p><strong>${data.solutions}</strong></p></div>
+      <div style=\"margin: 15px 0;\"><h4>📝 Thông tin chi tiết:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hệ số đã mã hóa:</strong> [${data.encoded_coefficients.join(', ')}]</p><p><strong>Rank ma trận A:</strong> ${data.matrix_info.rank_A}</p><p><strong>Rank ma trận mở rộng:</strong> ${data.matrix_info.rank_augmented}</p><p><strong>Determinant:</strong> ${Number(data.matrix_info.determinant).toFixed(6)}</p></div>`;
     }
 
     function showError(m){ document.getElementById('results').innerHTML=`<div class="error">❌ ${m}</div>`; }
     function setLoading(on){ const btn=document.getElementById('processBtn'); btn.disabled=on; if(on){ document.getElementById('results').innerHTML='<div class="loading">🔄 Đang xử lý...</div>'; } }
-    function setStatus(msg){ const r=document.getElementById('results'); if(r.innerText.includes('Chọn loại')||r.innerHTML.includes('loading')){ r.innerHTML=`<div class="error">⚠️ ${msg}</div>`; } }
     function copyToClipboard(t){ navigator.clipboard.writeText(t).then(()=>{ const b=event.target; const o=b.textContent; b.textContent='Copied!'; b.style.background='#27ae60'; setTimeout(()=>{ b.textContent=o; b.style.background='#3498db'; },1500); }).catch(()=>alert('Không thể copy.')); }
 
-    // Examples
     function loadExample2x2(){ document.getElementById('operation').value='Hệ phương trình 2 ẩn'; onOperationChange(); setTimeout(()=>{ const e0=document.getElementById('equation_0'); const e1=document.getElementById('equation_1'); if(e0) e0.value='2, 3, 7'; if(e1) e1.value='1, -1, 1'; },100); }
     function loadExample3x3(){ document.getElementById('operation').value='Hệ phương trình 3 ẩn'; onOperationChange(); setTimeout(()=>{ const e0=document.getElementById('equation_0'); const e1=document.getElementById('equation_1'); const e2=document.getElementById('equation_2'); if(e0) e0.value='1, 2, 1, 8'; if(e1) e1.value='2, -1, sqrt(4), 3'; if(e2) e2.value='1, 1, -1, pi'; },100); }
   </script>
