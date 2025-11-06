@@ -1,4 +1,4 @@
-<!-- Ensure shared helpers are loaded before other modules -->
+<!-- Add visualization canvas and scripts -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ConvertKeylogApp Geometry API - Web Demo (Modular)</title>
   <link rel="stylesheet" href="assets/css/web.css" />
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -20,20 +21,20 @@
         <h3>📝 Nhập dữ liệu</h3>
         <div class="form-group">
           <label for="operation">Phép toán:</label>
-          <select id="operation" onchange="updateShapeOptions()">
+          <select id="operation" onchange="updateShapeOptions(); updateVisualization();">
             <option value="">Chọn phép toán...</option>
           </select>
         </div>
         <div class="form-group">
           <label for="shapeA">Hình A:</label>
-          <select id="shapeA" onchange="updateInputFields()">
+          <select id="shapeA" onchange="updateInputFields(); updateVisualization();">
             <option value="">Chọn hình A...</option>
           </select>
         </div>
         <div id="inputsA" class="shape-inputs"></div>
         <div class="form-group">
           <label for="shapeB">Hình B (tùy chọn):</label>
-          <select id="shapeB" onchange="updateInputFields()">
+          <select id="shapeB" onchange="updateInputFields(); updateVisualization();">
             <option value="">Không có</option>
           </select>
         </div>
@@ -52,7 +53,13 @@
       </div>
 
       <div class="results-section">
-        <h3>📊 Kết quả</h3>
+        <h3>📐 Visualization</h3>
+        <div id="geometryPlot" style="width:100%; height:400px; border:1px solid #dee2e6; border-radius:8px;"></div>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+          <button class="btn" style="width:auto" onclick="resetView()">🔄 Reset View</button>
+          <button class="btn" style="width:auto" onclick="toggle3D()">🔄 2D/3D</button>
+        </div>
+        <h3 style="margin-top:20px;">📊 Kết quả</h3>
         <div id="results"><div class="loading">Nhập dữ liệu và nhấn "Tính toán" để xem kết quả...</div></div>
         <div id="validationResults"></div>
       </div>
@@ -60,7 +67,7 @@
       <div class="examples-section">
         <h3>💡 Ví dụ nhanh</h3>
         <p style="margin-bottom: 15px;">Nhấn vào một ví dụ để tự động điền dữ liệu:</p>
-        <button class="example-btn" onclick="document.getElementById('operation').value='Khoảng cách'; updateShapeOptions(); setTimeout(()=>{document.getElementById('shapeA').value='Điểm'; document.getElementById('shapeB').value='Điểm'; updateInputFields(); setTimeout(()=>{ const A=document.getElementById('point_input_A'); const B=document.getElementById('point_input_B'); if(A) A.value='1,2,3'; if(B) B.value='4,5,6'; },100); },100);">Khoảng cách 2 điểm</button>
+        <button class="example-btn" onclick="document.getElementById('operation').value='Khoảng cách'; updateShapeOptions(); setTimeout(()=>{document.getElementById('shapeA').value='Điểm'; document.getElementById('shapeB').value='Điểm'; updateInputFields(); setTimeout(()=>{ const A=document.getElementById('point_input_A'); const B=document.getElementById('point_input_B'); if(A) A.value='1,2'; if(B) B.value='4,5'; updateVisualization(); },100); },100);">Khoảng cách 2 điểm</button>
       </div>
 
       <div class="excel-section">
@@ -112,10 +119,11 @@
 
   <script src="assets/js/web_shared.js"></script>
   <script src="assets/js/web_core.js"></script>
+  <script src="assets/js/vis2d3d.js"></script>
   <script src="assets/js/web_excel.js"></script>
   <script src="assets/js/web_core_expose.js"></script>
   <script>
-    window.addEventListener('load', initApp);
+    window.addEventListener('load', ()=>{ initApp(); setupVisualization(); });
   </script>
 </body>
 </html>
