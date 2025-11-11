@@ -11,64 +11,56 @@
 function evalExpr(expr) {
   if (expr === undefined || expr === null) return NaN;
   if (typeof expr !== 'string') return Number(expr);
-  
+
   let s = expr.trim();
   if (!s) return NaN;
-  
-  // Process complex nested LaTeX structures FIRST (order matters!)
-  // 1. Nested: \frac{\sqrt{a}}{b} => Math.sqrt(a)/b
-  s = s.replace(/\\frac\{\\sqrt\{([^{}]+)\}\}\{([^{}]+)\}/g, 'Math.sqrt($1)/($2)');
-  
-  // 2. Nested: \frac{a}{\sqrt{b}} => a/Math.sqrt(b)
-  s = s.replace(/\\frac\{([^{}]+)\}\{\\sqrt\{([^{}]+)\}\}/g, '($1)/Math.sqrt($2)');
-  
-  // 3. Nested: \frac{\sqrt{a}}{\sqrt{b}} => Math.sqrt(a)/Math.sqrt(b)
-  s = s.replace(/\\frac\{\\sqrt\{([^{}]+)\}\}\{\\sqrt\{([^{}]+)\}\}/g, 'Math.sqrt($1)/Math.sqrt($2)');
-  
-  // 4. Nested: \sqrt{\sqrt{x}} => Math.sqrt(Math.sqrt(x))
-  s = s.replace(/\\sqrt\{\\sqrt\{([^{}]+)\}\}/g, 'Math.sqrt(Math.sqrt($1))');
-  
-  // 5. Nested: \sqrt{\frac{a}{b}} => Math.sqrt(a/b)
-  s = s.replace(/\\sqrt\{\\frac\{([^{}]+)\}\{([^{}]+)\}\}/g, 'Math.sqrt(($1)/($2))');
-  
-  // 6. Basic: \frac{a}{b} => a/b
-  s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '($1)/($2)');
-  
-  // 7. Basic: \sqrt{x} => Math.sqrt(x)
-  s = s.replace(/\\sqrt\{([^{}]+)\}/g, 'Math.sqrt($1)');
-  
-  // 8. Alternative: sqrt(x) without backslash
-  s = s.replace(/\\?sqrt\s*\(([^()]*)\)/g, 'Math.sqrt($1)');
-  
-  // 9. Trigonometric functions
+
+  // 1. Nested frac with sqrt numerator
+  s = s.replace(/\\frac{\\sqrt{([^{}]+)}}{([^{}]+)}/g, '(Math.sqrt($1))/($2)');
+
+  // 2. Nested frac with sqrt denominator
+  s = s.replace(/\\frac{([^{}]+)}{\\sqrt{([^{}]+)}}/g, '($1)/(Math.sqrt($2))');
+
+  // 3. Nested frac with sqrt in both
+  s = s.replace(/\\frac{\\sqrt{([^{}]+)}}{\\sqrt{([^{}]+)}}/g, '(Math.sqrt($1))/(Math.sqrt($2))');
+
+  // 4. sqrt of sqrt
+  s = s.replace(/\\sqrt{\\sqrt{([^{}]+)}}/g, 'Math.sqrt(Math.sqrt($1))');
+
+  // 5. sqrt of frac
+  s = s.replace(/\\sqrt{\\frac{([^{}]+)}{([^{}]+)}}/g, 'Math.sqrt(($1)/($2))');
+
+  // 6. Basic frac
+  s = s.replace(/\\frac{([^{}]+)}{([^{}]+)}/g, '($1)/($2)');
+
+  // 7. Replace only \sqrt{...}
+  s = s.replace(/\\sqrt{([^{}]+)}/g, function (_, inner) {
+    return 'Math.sqrt(' + inner + ')';
+  });
+
+  // 8. sqrt(x) dạng ascii
+  s = s.replace(/sqrt\(([^()]*)\)/g, function (_, inner) {
+    return 'Math.sqrt(' + inner + ')';
+  });
+
+  // 9. Trig, log/cos/tan, pi, e, exp gần như cũ
   s = s.replace(/\\sin\s*\(/g, 'Math.sin(');
   s = s.replace(/\bsin\s*\(/g, 'Math.sin(');
   s = s.replace(/\\cos\s*\(/g, 'Math.cos(');
   s = s.replace(/\bcos\s*\(/g, 'Math.cos(');
   s = s.replace(/\\tan\s*\(/g, 'Math.tan(');
   s = s.replace(/\btan\s*\(/g, 'Math.tan(');
-  
-  // 10. Logarithmic functions
   s = s.replace(/\\ln\s*\(/g, 'Math.log(');
   s = s.replace(/\bln\s*\(/g, 'Math.log(');
   s = s.replace(/\\log\s*\(/g, 'Math.log10(');
   s = s.replace(/\blog\s*\(/g, 'Math.log10(');
-  
-  // 11. Constants
   s = s.replace(/\\pi\b|\bpi\b/gi, 'Math.PI');
   s = s.replace(/\\e\b/g, 'Math.E');
-  
-  // 12. Exponential
   s = s.replace(/\\?exp\s*\(([^()]*)\)/g, 'Math.exp($1)');
-  
-  // 13. Power operator
   s = s.replace(/\^/g, '**');
-  
-  // 14. Clean up remaining braces (convert to parentheses)
-  s = s.replace(/\{/g, '(').replace(/\}/g, ')');
-  
+  s = s.replace(/{/g, '(').replace(/}/g, ')');
+
   try {
-    // Use Function constructor (safer than eval for expressions)
     // eslint-disable-next-line no-new-func
     const val = Function('return (' + s + ')')();
     const num = Number(val);
