@@ -1,17 +1,24 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import re
-from utils.config_loader import ConfigLoader
+import json
 import numpy as np
+import os
 
 polynomial_bp = Blueprint('polynomial', __name__)
 
+CONFIG_DIR = os.path.join(os.path.dirname(__file__), 'config', 'polynomial')
+
+def _load_config(name):
+    path = os.path.join(CONFIG_DIR, name)
+    with open(path, encoding='utf-8') as f:
+        return json.load(f)
+
 class PolynomialAPI:
     def __init__(self):
-        self.config_loader = ConfigLoader()
-        self.equations_config = self.config_loader.load_json('config/polynomial/equations.json')
-        self.prefixes_config = self.config_loader.load_json('config/polynomial/prefixes.json')
-        self.mappings_config = self.config_loader.load_json('config/polynomial/mappings.json')
+        self.equations_config = _load_config('equations.json')
+        self.prefixes_config = _load_config('prefixes.json')
+        self.mappings_config = _load_config('mappings.json')
 
     def encode_latex(self, latex_str: str) -> str:
         text = latex_str.replace(' ', '') if latex_str else ''
@@ -40,7 +47,7 @@ class PolynomialAPI:
     def solve_polynomial(self, degree: str, coefficients: list) -> dict:
         try:
             coeffs = [float(c) for c in coefficients]
-            coeffs = list(reversed(coeffs))  # Highest degree first for numpy
+            coeffs = list(reversed(coeffs))
             roots = np.roots(coeffs)
             formatted_roots = []
             for root in roots:
