@@ -783,6 +783,24 @@
         
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', initVisualizationCanvas);
+        
+        // Demo: Display sample geometry when visualization loads
+        function loadDemoGeometry() {
+            setTimeout(() => {
+                const demoGeometry = [
+                    { type: 'point', x: 1, y: 1, z: 1 },
+                    { type: 'point', x: 2, y: 2, z: 2 },
+                    { type: 'point', x: 3, y: 1, z: 2 },
+                    { type: 'line', x1: 0, y1: 0, z1: 0, x2: 5, y2: 5, z2: 5 },
+                    { type: 'line', x1: 0, y1: 0, z1: 5, x2: 5, y2: 5, z2: 0 },
+                    { type: 'line', x1: 5, y1: 0, z1: 0, x2: 0, y2: 5, z2: 5 }
+                ];
+                visualizeGeometry(demoGeometry);
+            }, 500);
+        }
+
+        // Auto-load demo geometry
+        setTimeout(loadDemoGeometry, 1000);
     </script>
 </body>
 </html>
