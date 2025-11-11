@@ -799,6 +799,53 @@
                 visualizeGeometry(demoGeometry);
             }, 500);
         }
+            // Parse raw form data to match createGeometryTrace() expectations
+    function parseGeometryData(type, rawData) {
+        if (!type || !rawData) return null;
+        
+        try {
+            switch(type) {
+                case 'Điểm':
+                case 'point':
+                    const pointStr = rawData.point_input || rawData.point_center;
+                    const coords = pointStr.split(',').map(s => parseFloat(s.trim()));
+                    return { x: coords[0], y: coords[1], z: coords[2] };
+                    
+                case 'Đường thẳng':
+                case 'line':
+                    const p1Str = rawData.line_p1;
+                    const p2Str = rawData.line_p2;
+                    const p1 = p1Str.split(',').map(s => parseFloat(s.trim()));
+                    const p2 = p2Str.split(',').map(s => parseFloat(s.trim()));
+                    return { x1: p1[0], y1: p1[1], z1: p1[2], dx: p2[0]-p1[0], dy: p2[1]-p1[1], dz: p2[2]-p1[2] };
+                    
+                case 'Mặt phẳng':
+                case 'plane':
+                    return {
+                        a: parseFloat(rawData.plane_a),
+                        b: parseFloat(rawData.plane_b),
+                        c: parseFloat(rawData.plane_c),
+                        d: parseFloat(rawData.plane_d)
+                    };
+                    
+                case 'Đường tròn':
+                case 'circle':
+                    const circleCenter = rawData.circle_center.split(',').map(s => parseFloat(s.trim()));
+                    return { cx: circleCenter[0], cy: circleCenter[1], r: parseFloat(rawData.circle_radius) };
+                    
+                case 'Mặt cầu':
+                case 'sphere':
+                    const sphereCenter = rawData.sphere_center.split(',').map(s => parseFloat(s.trim()));
+                    return { cx: sphereCenter[0], cy: sphereCenter[1], cz: sphereCenter[2], r: parseFloat(rawData.sphere_radius) };
+                    
+                default:
+                    return rawData;
+            }
+        } catch(e) {
+            console.error('Error parsing geometry data:', e);
+            return null;
+        }
+    }
 
             // Draw shape visualization based on form inputs
     function renderShapeVisualization() {
@@ -811,7 +858,9 @@
             if (shapeA !== 'none') {
                 const dataA = collectInputData('A', shapeA);
                 if (dataA) {
-                    const traceA = createGeometryTrace(shapeA, dataA, '#4CAF50');
+                                        // Parse raw form data to match createGeometryTrace expectations
+                    const parsedDataA = parseGeometryData(shapeA, dataA);
+                    const traceA = createGeometryTrace(shapeA, parsedDataA, '#4CAF50');
                     if (traceA) traces.push(traceA);
                 }
             }
@@ -819,8 +868,10 @@
             // Process shapeB
             if (shapeB !== 'none') {
                 const dataB = collectInputData('B', shapeB);
+                                    // Parse raw form data to match createGeometryTrace expectations
+                    const parsedDataB = parseGeometryData(shapeB, dataB);
                 if (dataB) {
-                    const traceB = createGeometryTrace(shapeB, dataB, '#2196F3');
+                    const traceB = createGeometryTrace(shapeB, parsedDataB, '#2196F3');
                     if (traceB) traces.push(traceB);
                 }
             }
