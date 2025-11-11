@@ -18,6 +18,12 @@ except Exception as e:
     equation_bp = None
     print(f"[WARN] equation_api import failed: {e}")
 
+try:
+    from polynomial_api import polynomial_bp
+except Exception as e:
+    polynomial_bp = None
+    print(f"[WARN] polynomial_api import failed: {e}")
+
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
@@ -25,6 +31,8 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 geometry_api = GeometryAPI() if GeometryAPI else None
 if equation_bp:
     app.register_blueprint(equation_bp, url_prefix='/api/equation')
+if polynomial_bp:
+    app.register_blueprint(polynomial_bp, url_prefix='/api/polynomial')
 
 # Serve examples/*.html directly via Flask
 BASE_DIR = os.path.dirname(__file__)
@@ -60,15 +68,17 @@ def home():
             '/api/equation/excel/upload', '/api/equation/excel/validate',
             '/api/equation/excel/process', '/api/equation/excel/download/<filename>',
             '/api/equation/excel/template/<operation>'
-        ] if equation_bp else []
+        ] if equation_bp else [],
+        'polynomial': [
+            '/api/polynomial/degrees', '/api/polynomial/template/<degree>', '/api/polynomial/process', '/api/polynomial/solve', '/api/polynomial/batch'] if polynomial_bp else []
     }
     return jsonify({
         'status': 'success',
         'message': 'ConvertKeylogApp Multi-Mode API is running',
-        'version': '1.3.0',  # Updated version
+        'version': '1.4.0',  # Updated version for polynomial
         'timestamp': datetime.now().isoformat(),
         'available_endpoints': endpoints,
-        'new_features': ['Excel Import/Export for Equation Mode']  # Highlight new feature
+        'new_features': ['Excel Import/Export for Equation Mode', 'Polynomial Mode (PT bậc 2, 3, 4)']
     })
 
 # ========== Geometry Endpoints (guarded) ==========
@@ -158,8 +168,6 @@ def process_batch():
         return jsonify({'status':'success','total_processed':len(calcs),'successful':len([r for r in results if r]),'errors':len(errors),'data':results,'error_details':errors or None})
     except Exception as e:
         return jsonify({'status':'error','message':str(e)}), 500
-
-# Excel helpers guarded similarly (omitted for brevity)
 
 @app.errorhandler(404)
 def not_found(e):
