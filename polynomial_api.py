@@ -1,33 +1,38 @@
+import os
+import json
+import re
+import numpy as np
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-import re
-import json
-import numpy as np
-import os
 
 polynomial_bp = Blueprint('polynomial', __name__)
+CONFIG_DIR = os.path.join(os.path.dirname(__file__), 'config')
+POLYNOMIAL_CONFIG_DIR = os.path.join(CONFIG_DIR, 'polynomial')
 
-CONFIG_DIR = os.path.join(os.path.dirname(__file__), 'config', 'polynomial')
-
-def _load_config(name):
-    path = os.path.join(CONFIG_DIR, name)
+def _load_config(name, subdir=None):
+    if subdir:
+        path = os.path.join(CONFIG_DIR, subdir, name)
+    else:
+        path = os.path.join(CONFIG_DIR, name)
     with open(path, encoding='utf-8') as f:
         return json.load(f)
 
 class PolynomialAPI:
     def __init__(self):
-        self.equations_config = _load_config('equations.json')
-        self.prefixes_config = _load_config('prefixes.json')
-        self.mappings_config = _load_config('mappings.json')
+        # Load config riêng cho polynomial
+        self.equations_config = _load_config('equations.json', 'polynomial')
+        self.prefixes_config = _load_config('prefixes.json', 'polynomial')
+        self.mappings_config = _load_config('mappings.json', 'polynomial')
+
+        # Load config chung cho tất cả mode
+        self.latex_eval_config = _load_config('latex_evaluations.json')
 
     def encode_latex(self, latex_str: str) -> str:
         text = latex_str.replace(' ', '') if latex_str else ''
-
         for rule in self.mappings_config.get('mappings', []):
             find = rule.get('find', '')
             replace = rule.get('replace', '')
             rtype = rule.get('type', 'literal')
-
             try:
                 if rtype == 'regex':
                     text = re.sub(find, replace, text)
@@ -36,8 +41,41 @@ class PolynomialAPI:
             except Exception as e:
                 print(f"[WARN] Mapping error: {e}, rule: {rule}")
                 continue
-
         return text
+
+    def evaluate_latex(self, latex_str: str) -> float:
+        if not latex_str:
+            return 0.0
+
+        s = latex_str.replace(' ', '')
+
+        # Load evaluation rules from JSON
+        eval_rules = self.latex_eval_config.get('latex_evaluations', [])
+
+        for rule in eval_rules:
+            pattern = rule.get('pattern', '')
+            replacement = rule.get('replacement', '')
+            rtype = rule.get('type', 'literal')
+
+            try:
+                if rtype == 'regex':
+                    s = re.sub(pattern, replacement, s)
+                else:  # literal
+                    s = s.replace(pattern, replacement)
+            except Exception as e:
+                print(f"[WARN] Evaluation error: {e}, rule: {rule}")
+                continue
+
+        # Safe eval
+        try:
+            import math
+            val = eval(s, {"__builtins__": None}, {"math": math})
+            return float(val)
+        except Exception as e:
+            try:
+                return float(latex_str)
+            except:
+                raise ValueError(f"Cannot convert '{latex_str}' to number: {e}")
 
     def generate_keylog(self, degree: str, coefficients: list, version: str = 'fx799') -> str:
         eq_info = self.equations_config['equations'].get(degree)
@@ -50,7 +88,7 @@ class PolynomialAPI:
 
     def solve_polynomial(self, degree: str, coefficients: list) -> dict:
         try:
-            coeffs = [float(c) for c in coefficients]
+            coeffs = [self.evaluate_latex(str(c)) for c in coefficients]
             coeffs = list(reversed(coeffs))
             roots = np.roots(coeffs)
             formatted_roots = []

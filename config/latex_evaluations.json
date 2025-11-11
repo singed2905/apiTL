@@ -1,0 +1,40 @@
+{
+  "latex_evaluations": [
+    {
+      "pattern": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}",
+      "replacement": "(\\1)/(\\2)",
+      "type": "regex",
+      "description": "Convert LaTeX fraction \\frac{a}{b} to evaluable (a)/(b)"
+    },
+    {
+      "pattern": "\\\\sqrt\\{([^{}]+)\\}",
+      "replacement": "math.sqrt(\\1)",
+      "type": "regex",
+      "description": "Convert LaTeX sqrt with backslash \\sqrt{x} to math.sqrt(x)"
+    },
+    {
+      "pattern": "sqrt\\{([^{}]+)\\}",
+      "replacement": "math.sqrt(\\1)",
+      "type": "regex",
+      "description": "Convert sqrt without backslash sqrt{x} to math.sqrt(x)"
+    },
+    {
+      "pattern": "\\{",
+      "replacement": "(",
+      "type": "literal",
+      "description": "Replace opening brace { with ("
+    },
+    {
+      "pattern": "\\}",
+      "replacement": ")",
+      "type": "literal",
+      "description": "Replace closing brace } with )"
+    },
+    {
+      "pattern": "\\^",
+      "replacement": "**",
+      "type": "literal",
+      "description": "Replace LaTeX exponent ^ with Python exponent **"
+    }
+  ]
+}
