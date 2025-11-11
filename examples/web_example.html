@@ -809,7 +809,7 @@
             
             // Process shapeA
             if (shapeA !== 'none') {
-                const dataA = collectInputData('shapeA');
+                const dataA = collectInputData('A', shapeA);
                 if (dataA) {
                     const traceA = createGeometryTrace(shapeA, dataA, '#4CAF50');
                     if (traceA) traces.push(traceA);
@@ -818,7 +818,7 @@
             
             // Process shapeB
             if (shapeB !== 'none') {
-                const dataB = collectInputData('shapeB');
+                const dataB = collectInputData('B', shapeB);
                 if (dataB) {
                     const traceB = createGeometryTrace(shapeB, dataB, '#2196F3');
                     if (traceB) traces.push(traceB);
