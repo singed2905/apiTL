@@ -1,20 +1,154 @@
 {
   "latex_to_calculator_mappings": [
-    { "find": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}", "replace": "\\1a\\2", "type": "regex", "description": "Fraction conversion" },
-    { "find": "\\\\?sqrt\\(([^()]+)\\)", "replace": "s\\1)", "type": "regex", "description": "Sqrt with parentheses" },
-    { "find": "\\\\sqrt\\{", "replace": "s", "type": "regex", "description": "Sqrt with braces (latex)" },
-    { "find": "sqrt\\{", "replace": "s", "type": "regex", "description": "Sqrt with braces (ascii)" },
-    { "find": "\\\\sin\\(", "replace": "j(", "type": "regex" },
-    { "find": "sin\\(", "replace": "j(", "type": "regex" },
-    { "find": "\\\\cos\\(", "replace": "k(", "type": "regex" },
-    { "find": "cos\\(", "replace": "k(", "type": "regex" },
-    { "find": "\\\\tan\\(", "replace": "l(", "type": "regex" },
-    { "find": "tan\\(", "replace": "l(", "type": "regex" },
-    { "find": "\\\\ln\\(", "replace": "h(", "type": "regex" },
-    { "find": "ln\\(", "replace": "h(", "type": "regex" },
-    { "find": "\\\\}", "replace": ")", "type": "regex" },
-    { "find": "\\\\{", "replace": "(", "type": "regex" },
-    { "find": "\\\\\\^", "replace": "^", "type": "regex" },
-    { "find": "_", "replace": "_", "type": "literal" }
+    {
+      "find": "\\\\frac\\{\\\\sqrt\\{([^{}]+)\\}\\}\\{([^{}]+)\\}",
+      "replace": "s\\1)a\\2",
+      "type": "regex",
+      "description": "Nested: fraction with sqrt in numerator - e.g. \\frac{\\sqrt{7}}{8}"
+    },
+    {
+      "find": "\\\\frac\\{([^{}]+)\\}\\{\\\\sqrt\\{([^{}]+)\\}\\}",
+      "replace": "\\1as\\2)",
+      "type": "regex",
+      "description": "Nested: fraction with sqrt in denominator - e.g. \\frac{3}{\\sqrt{5}}"
+    },
+    {
+      "find": "\\\\frac\\{\\\\sqrt\\{([^{}]+)\\}\\}\\{\\\\sqrt\\{([^{}]+)\\}\\}",
+      "replace": "s\\1)as\\2)",
+      "type": "regex",
+      "description": "Nested: fraction with sqrt in both numerator and denominator"
+    },
+    {
+      "find": "\\\\sqrt\\{\\\\sqrt\\{([^{}]+)\\}\\}",
+      "replace": "ss\\1))",
+      "type": "regex",
+      "description": "Nested sqrt - e.g. \\sqrt{\\sqrt{x}}"
+    },
+    {
+      "find": "\\\\sqrt\\{\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}\\}",
+      "replace": "s\\1a\\2)",
+      "type": "regex",
+      "description": "Sqrt of fraction - e.g. \\sqrt{\\frac{3}{4}}"
+    },
+    {
+      "find": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}",
+      "replace": "\\1a\\2",
+      "type": "regex",
+      "description": "Basic fraction - e.g. \\frac{1}{2}"
+    },
+    {
+      "find": "\\\\sqrt\\{([^{}]+)\\}",
+      "replace": "s\\1)",
+      "type": "regex",
+      "description": "Sqrt with braces - e.g. \\sqrt{5}"
+    },
+    {
+      "find": "\\\\?sqrt\\(([^()]+)\\)",
+      "replace": "s\\1)",
+      "type": "regex",
+      "description": "Sqrt with parentheses - e.g. sqrt(5)"
+    },
+    {
+      "find": "sqrt\\{",
+      "replace": "s",
+      "type": "regex",
+      "description": "Sqrt with braces (ascii style)"
+    },
+    {
+      "find": "\\\\sin\\(",
+      "replace": "j(",
+      "type": "regex",
+      "description": "Sine function"
+    },
+    {
+      "find": "sin\\(",
+      "replace": "j(",
+      "type": "regex",
+      "description": "Sine function (ascii)"
+    },
+    {
+      "find": "\\\\cos\\(",
+      "replace": "k(",
+      "type": "regex",
+      "description": "Cosine function"
+    },
+    {
+      "find": "cos\\(",
+      "replace": "k(",
+      "type": "regex",
+      "description": "Cosine function (ascii)"
+    },
+    {
+      "find": "\\\\tan\\(",
+      "replace": "l(",
+      "type": "regex",
+      "description": "Tangent function"
+    },
+    {
+      "find": "tan\\(",
+      "replace": "l(",
+      "type": "regex",
+      "description": "Tangent function (ascii)"
+    },
+    {
+      "find": "\\\\ln\\(",
+      "replace": "h(",
+      "type": "regex",
+      "description": "Natural logarithm"
+    },
+    {
+      "find": "ln\\(",
+      "replace": "h(",
+      "type": "regex",
+      "description": "Natural logarithm (ascii)"
+    },
+    {
+      "find": "\\\\log\\(",
+      "replace": "g(",
+      "type": "regex",
+      "description": "Common logarithm"
+    },
+    {
+      "find": "log\\(",
+      "replace": "g(",
+      "type": "regex",
+      "description": "Common logarithm (ascii)"
+    },
+    {
+      "find": "\\\\pi",
+      "replace": "P",
+      "type": "regex",
+      "description": "Pi constant"
+    },
+    {
+      "find": "-",
+      "replace": "p",
+      "type": "literal",
+      "description": "Minus sign to 'p'"
+    },
+    {
+      "find": "\\\\}",
+      "replace": ")",
+      "type": "regex",
+      "description": "Closing brace to closing paren"
+    },
+    {
+      "find": "\\\\{",
+      "replace": "(",
+      "type": "regex",
+      "description": "Opening brace to opening paren"
+    },
+    {
+      "find": "\\\\\\^",
+      "replace": "^",
+      "type": "regex",
+      "description": "Caret escape"
+    },
+    {
+      "find": "_",
+      "replace": "_",
+      "type": "literal",
+      "description": "Underscore (subscript)"
+    }
   ]
 }
