@@ -1,0 +1,34 @@
+{
+  "latex_to_calculator_mappings": [
+    {
+      "find": "\\frac{\\sqrt{([^{}]+)}}{([^{}]+)}",
+      "replace": "s\1)a\2",
+      "type": "regex",
+      "description": "Nested fraction with sqrt in numerator"
+    },
+    {
+      "find": "\\frac{([^{}]+)}{([^{}]+)}",
+      "replace": "\1a\2",
+      "type": "regex",
+      "description": "Basic fraction"
+    },
+    {
+      "find": "\\sqrt{([^{}]+)}",
+      "replace": "s\1)",
+      "type": "regex",
+      "description": "Square root"
+    },
+    {
+      "find": "-",
+      "replace": "p",
+      "type": "literal",
+      "description": "Minus sign"
+    },
+    {
+      "find": "\\pi",
+      "replace": "P",
+      "type": "regex",
+      "description": "Pi constant"
+    }
+  ]
+}
