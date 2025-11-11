@@ -44,38 +44,79 @@ class PolynomialAPI:
         return text
 
     def evaluate_latex(self, latex_str: str) -> float:
+        """
+        Convert LaTeX to numeric value
+        Apply each rule only ONCE to avoid double replacement
+        """
         if not latex_str:
             return 0.0
 
-        s = latex_str.replace(' ', '')
+        # Convert to string and clean
+        s = str(latex_str).strip().replace(' ', '')
 
-        # Load evaluation rules from JSON
+        # Quick check: already a number?
+        try:
+            return float(s)
+        except ValueError:
+            pass
+
+        # Load evaluation rules
         eval_rules = self.latex_eval_config.get('latex_evaluations', [])
 
+        # Apply each rule exactly once, in order
         for rule in eval_rules:
             pattern = rule.get('pattern', '')
             replacement = rule.get('replacement', '')
             rtype = rule.get('type', 'literal')
 
-            try:
-                if rtype == 'regex':
-                    s = re.sub(pattern, replacement, s)
-                else:  # literal
-                    s = s.replace(pattern, replacement)
-            except Exception as e:
-                print(f"[WARN] Evaluation error: {e}, rule: {rule}")
+            if not pattern:
                 continue
 
-        # Safe eval
+            try:
+                original = s
+
+                if rtype == 'regex':
+                    # Use re.sub which replaces ALL matches
+                    s = re.sub(pattern, replacement, s)
+                else:  # literal
+                    # Replace ALL occurrences
+                    s = s.replace(pattern, replacement)
+
+                # Debug log if changed
+                if s != original and False:  # Set True to enable debug
+                    print(f"[DEBUG] Rule: {rule.get('description', '')}")
+                    print(f"  {original} → {s}")
+
+            except Exception as e:
+                print(f"[WARN] Rule failed: {rule.get('description', '')}: {e}")
+                continue
+
+        # Final cleanup: remove any remaining LaTeX artifacts
+        s = s.replace('{', '(').replace('}', ')')
+
+        # Safe evaluation
         try:
             import math
-            val = eval(s, {"__builtins__": None}, {"math": math})
-            return float(val)
+
+            # Create safe evaluation namespace
+            safe_namespace = {
+                "__builtins__": None,
+                "math": math
+            }
+
+            result = eval(s, safe_namespace)
+            return float(result)
+
         except Exception as e:
+            # Fallback: try direct float conversion
             try:
                 return float(latex_str)
             except:
-                raise ValueError(f"Cannot convert '{latex_str}' to number: {e}")
+                raise ValueError(
+                    f"Cannot convert '{latex_str}' to number. "
+                    f"After processing: '{s}'. "
+                    f"Error: {str(e)}"
+                )
 
     def generate_keylog(self, degree: str, coefficients: list, version: str = 'fx799') -> str:
         eq_info = self.equations_config['equations'].get(degree)
@@ -87,10 +128,42 @@ class PolynomialAPI:
         return prefix + '='.join(encoded_coeffs) + suffix+"="
 
     def solve_polynomial(self, degree: str, coefficients: list) -> dict:
+        """
+        Solve polynomial equation
+
+        Input format: coefficients từ CAO xuống THẤP
+        - Bậc 2: [a, b, c] cho ax² + bx + c = 0
+        - Bậc 3: [a, b, c, d] cho ax³ + bx² + cx + d = 0
+        """
         try:
-            coeffs = [self.evaluate_latex(str(c)) for c in coefficients]
-            coeffs = list(reversed(coeffs))
-            roots = np.roots(coeffs)
+            # Step 1: Evaluate LaTeX to numbers
+            coeffs = []
+            for i, coeff in enumerate(coefficients):
+                try:
+                    numeric_val = self.evaluate_latex(str(coeff))
+                    coeffs.append(numeric_val)
+                except Exception as e:
+                    return {
+                        'error': f"Cannot evaluate coefficient #{i + 1} ('{coeff}'): {str(e)}"
+                    }
+
+            print(f"[DEBUG] Input coefficients: {coefficients}")
+            print(f"[DEBUG] Evaluated (high→low): {coeffs}")
+
+            # Step 2: numpy.roots expects HIGH to LOW degree
+            # Our input is already HIGH to LOW, so use directly
+            # DO NOT REVERSE if input is already correct order
+
+            # ✅ FIX: Check if we need to reverse
+            # Input: [a, b, c] for ax² + bx + c
+            # numpy expects: [a, b, c] (same order - high to low)
+            # So NO REVERSE needed!
+
+            roots = np.roots(coeffs)  # Pass directly, no reverse
+
+            print(f"[DEBUG] Roots found: {roots}")
+
+            # Step 3: Format results
             formatted_roots = []
             for root in roots:
                 if np.isreal(root):
@@ -100,18 +173,24 @@ class PolynomialAPI:
                         'display': f"{float(np.real(root)):.6f}"
                     })
                 else:
+                    real_part = float(np.real(root))
+                    imag_part = float(np.imag(root))
                     formatted_roots.append({
                         'type': 'complex',
-                        'real': float(np.real(root)),
-                        'imag': float(np.imag(root)),
-                        'display': f"{float(np.real(root)):.6f} + {float(np.imag(root)):.6f}i"
+                        'real': real_part,
+                        'imag': imag_part,
+                        'display': f"{real_part:.6f} + {imag_part:.6f}i" if imag_part >= 0
+                        else f"{real_part:.6f} - {abs(imag_part):.6f}i"
                     })
+
             return {
                 'roots': formatted_roots,
                 'num_roots': len(formatted_roots)
             }
+
         except Exception as e:
             return {'error': str(e)}
+
 
 poly_api = PolynomialAPI()
 
