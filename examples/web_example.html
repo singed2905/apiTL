@@ -209,6 +209,7 @@
             </div>
 
             <button class="btn" onclick="processGeometry()" id="processBtn">🚀 Tính toán</button>
+                            <button class="btn" onclick="renderShapeVisualization()" id="drawBtn">🎨 Vẽ hình</button>
         </div>
 
         <div class="results-section">
@@ -799,8 +800,133 @@
             }, 500);
         }
 
+            // Draw shape visualization based on form inputs
+    function renderShapeVisualization() {
+        try {
+            const shapeA = document.getElementById('shapeA').value;
+            const shapeB = document.getElementById('shapeB').value;
+            const traces = [];
+            
+            // Process shapeA
+            if (shapeA !== 'none') {
+                const dataA = collectInputData('shapeA');
+                if (dataA) {
+                    const traceA = createGeometryTrace(shapeA, dataA, '#4CAF50');
+                    if (traceA) traces.push(traceA);
+                }
+            }
+            
+            // Process shapeB
+            if (shapeB !== 'none') {
+                const dataB = collectInputData('shapeB');
+                if (dataB) {
+                    const traceB = createGeometryTrace(shapeB, dataB, '#2196F3');
+                    if (traceB) traces.push(traceB);
+                }
+            }
+            
+            // Draw all traces
+            if (traces.length > 0) {
+                Plotly.react('geometryCanvas', traces, {}, { responsive: true });
+            } else {
+                alert('Vui lòng chọn hình học và nhập dữ liệu!');
+            }
+        } catch (e) {
+            console.error('Lỗi vẽ hình:', e);
+            alert('Lỗi khi vẽ hình: ' + e.message);
+        }
+    }
+    
+    function createGeometryTrace(type, data, color) {
+        try {
+            switch(type) {
+                case 'point':
+                    return {
+                        x: [data.x || 0],
+                        y: [data.y || 0],
+                        z: [data.z || 0],
+                        mode: 'markers',
+                        marker: { size: 8, color: color },
+                        name: 'Điểm',
+                        type: 'scatter3d'
+                    };
+                    
+                case 'line':
+                    const x1 = data.x1 || 0, y1 = data.y1 || 0, z1 = data.z1 || 0;
+                    const dx = data.dx || 1, dy = data.dy || 0, dz = data.dz || 0;
+                    const t_vals = [-5, 5];
+                    return {
+                        x: t_vals.map(t => x1 + t * dx),
+                        y: t_vals.map(t => y1 + t * dy),
+                        z: t_vals.map(t => z1 + t * dz),
+                        mode: 'lines',
+                        line: { color: color, width: 2 },
+                        name: 'Đường thẳng',
+                        type: 'scatter3d'
+                    };
+                    
+                case 'plane':
+                    const a = data.a || 1, b = data.b || 1, c = data.c || 1, d = data.d || 0;
+                    const grid_size = 5;
+                    const x_plane = [], y_plane = [], z_plane = [];
+                    for (let i = -grid_size; i <= grid_size; i++) {
+                        for (let j = -grid_size; j <= grid_size; j++) {
+                            x_plane.push(i);
+                            y_plane.push(j);
+                            z_plane.push(-(a*i + b*j + d) / (c || 1));
+                        }
+                    }
+                    return {
+                        x: x_plane,
+                        y: y_plane,
+                        z: z_plane,
+                        mode: 'markers',
+                        marker: { size: 2, color: color, opacity: 0.6 },
+                        name: 'Mặt phẳng',
+                        type: 'scatter3d'
+                    };
+                    
+                case 'circle':
+                    const cx = data.cx || 0, cy = data.cy || 0, r = data.r || 1;
+                    const angles = [];
+                    for (let i = 0; i <= 360; i += 5) angles.push(i * Math.PI / 180);
+                    return {
+                        x: angles.map(a => cx + r * Math.cos(a)),
+                        y: angles.map(a => cy + r * Math.sin(a)),
+                        mode: 'lines',
+                        line: { color: color, width: 2 },
+                        name: 'Đường tròn',
+                        type: 'scatter'
+                    };
+                    
+                case 'sphere':
+                    const cx_s = data.cx || 0, cy_s = data.cy || 0, cz_s = data.cz || 0, r_s = data.r || 1;
+                    const x_s = [], y_s = [], z_s = [];
+                    for (let lat = 0; lat <= Math.PI; lat += Math.PI / 10) {
+                        for (let lng = 0; lng <= 2 * Math.PI; lng += Math.PI / 10) {
+                            x_s.push(cx_s + r_s * Math.sin(lat) * Math.cos(lng));
+                            y_s.push(cy_s + r_s * Math.sin(lat) * Math.sin(lng));
+                            z_s.push(cz_s + r_s * Math.cos(lat));
+                        }
+                    }
+                    return {
+                        x: x_s,
+                        y: y_s,
+                        z: z_s,
+                        mode: 'markers',
+                        marker: { size: 2, color: color, opacity: 0.5 },
+                        name: 'Hình cầu',
+                        type: 'scatter3d'
+                    };
+            }
+        } catch (e) {
+            console.error('Lỗi tạo hình:', type, e);
+        }
+        return null;
+    }
+
         // Auto-load demo geometry
-        setTimeout(loadDemoGeometry, 1000);
+        setT// setTimeout(loadDemoGeometry, 1000); // Disabled: user should click 'Vẽ hình' button to draw
     </script>
 </body>
 </html>
