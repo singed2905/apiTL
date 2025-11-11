@@ -11,12 +11,64 @@ async function initApp(){
     const sd=await s.json(); const od=await o.json();
     availableShapes=sd.data||[]; availableOperations=od.data||[];
     populateOperations(); populateShapes();
+    setupDynamicShapeDropdownFilter(); // add
   }catch(e){ showError('Không thể kết nối đến API.'); }
 }
 function populateOperations(){ const sel=document.getElementById('operation'); sel.innerHTML='<option value="">Chọn phép toán...</option>'; (availableOperations||[]).forEach(op=>{ const o=document.createElement('option'); o.value=op; o.textContent=op; sel.appendChild(o); }); }
 function populateShapes(){ const a=document.getElementById('shapeA'), b=document.getElementById('shapeB'); a.innerHTML='<option value="">Chọn hình A...</option>'; b.innerHTML='<option value="">Không có</option>'; (availableShapes||[]).forEach(s=>{ const oa=document.createElement('option'); oa.value=s; oa.textContent=s; a.appendChild(oa); const ob=document.createElement('option'); ob.value=s; ob.textContent=s; b.appendChild(ob); }); }
 
-function updateShapeOptions(){ /* TODO: fetch shapes per operation if needed; fallback uses availableShapes */ populateShapes(); }
+function setupDynamicShapeDropdownFilter(){
+  const opSel = document.getElementById('operation');
+  opSel.addEventListener('change', ()=> updateShapeOptions());
+  updateShapeOptions();
+}
+
+function updateShapeOptions(){
+  const op = document.getElementById('operation').value;
+  const a = document.getElementById('shapeA');
+  const b = document.getElementById('shapeB');
+  // Default: show all
+  let shapeAOpts = [...availableShapes], shapeBOpts = [...availableShapes];
+  let showA = true, showB = true;
+
+  // Custom logic
+  if(op==="Tương giao"||op==="Khoảng cách"){
+    shapeAOpts = [...availableShapes];
+    shapeBOpts = [...availableShapes];
+    showA = showB = true;
+  } else if(op==="Diện tích"){
+    shapeAOpts = ["Đường tròn", "Mặt cầu"];
+    shapeBOpts = [];
+    showA = true; showB = false;
+  } else if(op==="PT đường thẳng"){
+    shapeAOpts = ["Điểm"];
+    shapeBOpts = ["Điểm"];
+    showA = showB = true;
+  } else if(op==="Thể tích"){
+    shapeAOpts = ["Mặt cầu"];
+    shapeBOpts = [];
+    showA = true; showB = false;
+  }
+
+  // Populate dropdowns
+  a.innerHTML='<option value="">Chọn hình A...</option>';
+  shapeAOpts.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; a.appendChild(o); });
+  b.innerHTML= '<option value="">Không có</option>';
+  shapeBOpts.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; b.appendChild(o); });
+
+  // Hiện/ẩn các input group hình theo từng operation
+  a.parentElement.style.display = showA ? "" : "none";
+  document.getElementById('inputsA').style.display = showA ? "" : "none";
+  b.parentElement.style.display = showB ? "" : "none";
+  document.getElementById('inputsB').style.display = showB ? "" : "none";
+
+  // Reset input fields for nhóm hidden
+  if(!showB){ b.value = ""; document.getElementById('inputsB').innerHTML = ""; }
+  if(!showA){ a.value = ""; document.getElementById('inputsA').innerHTML = ""; }
+  // Auto-update fields after option filtering
+  updateInputFields();
+}
+
 function updateInputFields(){ const a=document.getElementById('shapeA').value; const b=document.getElementById('shapeB').value; updateShapeInputs('A',a); updateShapeInputs('B',b); }
 function updateShapeInputs(g,s){ const c=document.getElementById(`inputs${g}`); c.innerHTML=''; if(!s){ c.classList.remove('active'); return; } c.classList.add('active'); if(s==='Điểm'){ c.innerHTML=`<label>Tọa độ (x,y,z):</label><input type="text" id="point_input_${g}" placeholder="1,2,3">`; } else if(s==='Đường thẳng'){ c.innerHTML=`<label>Điểm trên đường thẳng (x,y,z):</label><input type="text" id="line_A${g==='A'?'1':'2'}_${g}" placeholder="0,0,0"><label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label><input type="text" id="line_X${g==='A'?'1':'2'}_${g}" placeholder="1,1,1">`; } else if(s==='Mặt phẳng'){ c.innerHTML=`<label>a, b, c, d:</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><input id="plane_a_${g}" placeholder="a"><input id="plane_b_${g}" placeholder="b"><input id="plane_c_${g}" placeholder="c"><input id="plane_d_${g}" placeholder="d"></div>`; } else if(s==='Đường tròn'){ c.innerHTML=`<label>Tâm (x,y):</label><input id="circle_center_${g}" placeholder="0,0"><label style="margin-top:10px;">Bán kính:</label><input id="circle_radius_${g}" placeholder="5">`; } else if(s==='Mặt cầu'){ c.innerHTML=`<label>Tâm (x,y,z):</label><input id="sphere_center_${g}" placeholder="0,0,0"><label style="margin-top:10px;">Bán kính:</label><input id="sphere_radius_${g}" placeholder="3">`; } }
 
