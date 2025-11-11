@@ -85,6 +85,12 @@
       "description": "Hàm ln(x) không dấu \\\\ → h(x)"
     },
     {
+      "find": "\\^\\{([^{}]+)\\}",
+      "replace": "b(\\1)",
+      "type": "regex",
+      "description": "Dấu mũ ^{x} → b(x)"
+    },
+    {
       "find": "\\}",
       "replace": ")",
       "type": "regex",
