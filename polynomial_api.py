@@ -22,17 +22,21 @@ class PolynomialAPI:
 
     def encode_latex(self, latex_str: str) -> str:
         text = latex_str.replace(' ', '') if latex_str else ''
-        for rule in self.mappings_config.get('latex_to_calculator_mappings', []):
+
+        for rule in self.mappings_config.get('mappings', []):
             find = rule.get('find', '')
             replace = rule.get('replace', '')
             rtype = rule.get('type', 'literal')
+
             try:
                 if rtype == 'regex':
                     text = re.sub(find, replace, text)
-                else:
+                else:  # literal
                     text = text.replace(find, replace)
-            except Exception:
+            except Exception as e:
+                print(f"[WARN] Mapping error: {e}, rule: {rule}")
                 continue
+
         return text
 
     def generate_keylog(self, degree: str, coefficients: list, version: str = 'fx799') -> str:
