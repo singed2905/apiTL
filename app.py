@@ -105,16 +105,21 @@ def home():
     return jsonify({
         'status': 'success',
         'message': 'ConvertKeylogApp Multi-Mode API',
-        'version': '1.5.0',
+        'version': '1.6.0',
         'timestamp': datetime.now().isoformat(),
         'available_endpoints': endpoints,
         'changelog': {
+            'v1.6.0': [
+                'Separated business logic into geometry_service.py',
+                'Service layer pattern implementation',
+                'Better code organization and testability',
+                'Foundation for future enhancements'
+            ],
             'v1.5.0': [
                 'Refactored Geometry API to Blueprint pattern',
                 'Added validation endpoint for Geometry',
                 'Added template endpoints for Geometry',
-                'Consistent API structure across all modes',
-                'Improved code organization and maintainability'
+                'Consistent API structure across all modes'
             ]
         },
         'documentation': 'https://github.com/singed2905/apiTL'
@@ -151,18 +156,18 @@ if __name__ == '__main__':
     debug = os.environ.get('DEBUG', 'True').lower() == 'true'
     
     print("\n" + "="*60)
-    print("🚀 ConvertKeylogApp Multi-Mode API v1.5.0")
+    print("🚀 ConvertKeylogApp Multi-Mode API v1.6.0")
     print("="*60)
     print(f"📍 Server: http://localhost:{port}")
     print(f"📋 API Docs: http://localhost:{port}/")
     print(f"🧪 Examples: http://localhost:{port}/examples/")
     print(f"🔧 Debug Mode: {debug}")
     print("="*60)
-    print("\n✨ What's New in v1.5.0:")
-    print("  • Geometry API refactored to Blueprint pattern")
-    print("  • Added /api/geometry/validate endpoint")
-    print("  • Added /api/geometry/template endpoints")
-    print("  • Cleaner code structure and better maintainability")
+    print("\n✨ What's New in v1.6.0:")
+    print("  • Service layer pattern - business logic separated")
+    print("  • geometry_service.py - dedicated service module")
+    print("  • Better testability and maintainability")
+    print("  • Foundation for advanced features")
     print("\n" + "="*60 + "\n")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
