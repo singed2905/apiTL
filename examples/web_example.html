@@ -159,6 +159,7 @@
             .header h1 { font-size: 1.8em; }
         }
     </style>
+        <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -708,5 +709,80 @@
 
     window.addEventListener('load', initApp);
 </script>
+    
+    <!-- VISUALIZATION SECTION: Real-time 3D Geometry Canvas -->
+    <script>
+        // Initialize visualization canvas on page load
+        function initVisualizationCanvas() {
+            const canvas = document.createElement('div');
+            canvas.id = 'geometryCanvas';
+            canvas.style.cssText = 'width:100%; height:500px; background:#f0f0f0; border-radius:10px; margin-top:30px; border:2px solid #ddd;';
+            
+            const container = document.querySelector('.main-content');
+            if (container) {
+                container.appendChild(canvas);
+            } else {
+                document.querySelector('.container').appendChild(canvas);
+            }
+            
+            // Initialize empty plot
+            const layout = {
+                title: '🎨 Real-time 3D Geometry Visualization',
+                scene: {
+                    xaxis: { title: 'X Axis', showgrid: true },
+                    yaxis: { title: 'Y Axis', showgrid: true },
+                    zaxis: { title: 'Z Axis', showgrid: true }
+                },
+                autosize: true,
+                margin: { l: 0, r: 0, t: 40, b: 0 }
+            };
+            
+            const data = [];
+            Plotly.newPlot('geometryCanvas', data, layout, { responsive: true });
+        }
+        
+        // Visualize geometry shapes
+        function visualizeGeometry(geometryData) {
+            if (!geometryData || geometryData.length === 0) {
+                console.log('No geometry data to visualize');
+                return;
+            }
+            
+            const traces = [];
+            
+            geometryData.forEach((item, index) => {
+                const type = item.type?.toLowerCase();
+                
+                if (type === 'point') {
+                    traces.push({
+                        x: [item.x],
+                        y: [item.y],
+                        z: [item.z],
+                        mode: 'markers',
+                        type: 'scatter3d',
+                        name: `Point ${index + 1}`,
+                        marker: { size: 8, color: '#FF6B6B' }
+                    });
+                } else if (type === 'line') {
+                    traces.push({
+                        x: [item.x1, item.x2],
+                        y: [item.y1, item.y2],
+                        z: [item.z1, item.z2],
+                        mode: 'lines',
+                        type: 'scatter3d',
+                        name: `Line ${index + 1}`,
+                        line: { color: '#4ECDC4', width: 4 }
+                    });
+                }
+            });
+            
+            if (traces.length > 0) {
+                Plotly.react('geometryCanvas', traces, {}, { responsive: true });
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initVisualizationCanvas);
+    </script>
 </body>
 </html>
