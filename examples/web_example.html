@@ -5,240 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConvertKeylogApp Geometry API - Web Demo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(45deg, #4CAF50, #2196F3); color: white; padding: 30px; text-align: center; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .header p { font-size: 1.1em; opacity: 0.9; }
         .main-content { padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .form-section { background: #f8f9fa; border-radius: 10px; padding: 25px; border: 2px solid #e9ecef; }
-        .form-section h3 { color: #495057; margin-bottom: 20px; font-size: 1.3em; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; }
-        .form-group select, .form-group input { width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
-        .form-group select:focus, .form-group input:focus { outline: none; border-color: #4CAF50; box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1); }
-        .btn { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-top: 10px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
-        .btn:disabled { background: #6c757d; cursor: not-allowed; transform: none; box-shadow: none; }
-        .results-section { background: #fff; border-radius: 10px; padding: 25px; border: 2px solid #e9ecef; }
-        .result-item { background: #f8f9fa; border-left: 4px solid #4CAF50; padding: 15px; margin-bottom: 15px; border-radius: 0 6px 6px 0; }
-        .result-item h4 { color: #495057; margin-bottom: 8px; }
-        .keylog { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 16px; word-break: break-all; position: relative; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .loading { text-align: center; padding: 20px; color: #6c757d; }
-        .shape-inputs { display: none; margin-top: 15px; padding: 15px; background: #ffffff; border-radius: 6px; border: 1px solid #dee2e6; }
-        .shape-inputs.active { display: block; }
-        .examples-section { grid-column: 1 / -1; background: #e8f5e8; border-radius: 10px; padding: 25px; margin-top: 20px; }
-        .example-btn { background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
-        .example-btn:hover { background: #138496; }
-        .excel-section { background: #f8f9fa; border-radius: 10px; padding: 25px; border: 2px solid #e9ecef; margin-top: 20px; grid-column: 1 / -1; }
-        .upload-zone { border: 2px dashed #4CAF50; border-radius: 10px; padding: 40px; text-align: center; cursor: pointer; transition: background-color 0.3s; }
-        .upload-zone:hover { background-color: #f0f8f0; }
-        .upload-icon { font-size: 3em; margin-bottom: 10px; }
-        .file-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #dee2e6; }
-        .preview-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .preview-table th, .preview-table td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
-        .preview-table th { background-color: #f8f9fa; font-weight: 600; }
-        .progress-section { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .progress-bar { width: 100%; height: 20px; background-color: #e9ecef; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: linear-gradient(45deg, #4CAF50, #45a049); width: 0%; transition: width 0.3s ease; }
-        .batch-results { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .validation-summary { background: #fff; border: 1px dashed #4CAF50; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .validation-error { background: #fdecea; color: #d93025; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
-        .validation-success { background: #e6f4ea; color: #137333; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
-        .detected-columns { margin-top: 10px; }
-        .column-list { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 8px; border-radius: 6px; }
-        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } .header h1 { font-size: 1.8em; } }
+        .form-section { background: #f8f9fa; border-radius: 10px; padding: 20px; border: 2px solid #e9ecef; }
+        .form-section h2 { font-size: 1.3em; margin-bottom: 15px; color: #2c3e50; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #2c3e50; }
+        select, input { width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,.3); }
+        .visualization-section { grid-column: 1 / -1; background: #f8f9fa; border-radius: 10px; padding: 20px; border: 2px solid #e9ecef; }
+        .visualization-section h2 { font-size: 1.3em; margin-bottom: 15px; color: #2c3e50; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+        .canvas-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .btn-small { background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .btn-small:hover { transform: translateY(-2px); }
+        #geometryCanvas { width: 100%; height: 500px; border: 2px solid #e9ecef; border-radius: 10px; background: white; }
+        .canvas-info { margin-top: 15px; padding: 12px; background: white; border-radius: 6px; text-align: center; color: #667eea; font-size: 14px; }
+        .results-section { grid-column: 1 / -1; background: #f8f9fa; border-radius: 10px; padding: 20px; border: 2px solid #e9ecef; }
+        .results-section h2 { font-size: 1.3em; margin-bottom: 15px; color: #2c3e50; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+        .result-item { background: white; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+        .result-item .keylog { background: #f0f4ff; padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace; color: #667eea; margin-top: 8px; word-break: break-all; }
+        .error { color: #e74c3c; padding: 10px; background: #fadbd8; border-radius: 6px; margin-top: 10px; }
+        .success { color: #27ae60; padding: 10px; background: #d5f4e6; border-radius: 6px; margin-top: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>🧮 ConvertKeylogApp Geometry API</h1>
-        <p>Web Demo - Chuyển đổi bài toán hình học thành keylog máy tính Casio</p>
+        <h1>🎨 Geometry Mode with 3D Visualization</h1>
+        <p>ConvertKeylogApp API - Interactive Geometry Solver + Real-time Canvas</p>
     </div>
-
     <div class="main-content">
         <div class="form-section">
-            <h3>📝 Nhập dữ liệu</h3>
+            <h2>📐 Shape A</h2>
             <div class="form-group">
-                <label for="operation">Phép toán:</label>
-                <select id="operation" onchange="updateShapeOptions()">
-                    <option value="">Chọn phép toán...</option>
+                <label>Shape Type</label>
+                <select id="shapeA" onchange="updateFormA()">
+                    <option value="">-- Select --</option>
+                    <option value="Point">Point</option>
+                    <option value="Line">Line</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="shapeA">Hình A:</label>
-                <select id="shapeA" onchange="updateInputFields()">
-                    <option value="">Chọn hình A...</option>
-                </select>
-            </div>
-            <div id="inputsA" class="shape-inputs"></div>
-            <div class="form-group">
-                <label for="shapeB">Hình B (tùy chọn):</label>
-                <select id="shapeB" onchange="updateInputFields()">
-                    <option value="">Không có</option>
-                </select>
-            </div>
-            <div id="inputsB" class="shape-inputs"></div>
-            <div class="form-group">
-                <label for="version">Phiên bản máy tính:</label>
-                <select id="version">
-                    <option value="fx799">Casio fx-799</option>
-                    <option value="fx800">Casio fx-800</option>
-                    <option value="fx801">Casio fx-801</option>
-                    <option value="fx802">Casio fx-802</option>
-                    <option value="fx803">Casio fx-803</option>
-                </select>
-            </div>
-            <button class="btn" onclick="processGeometry()" id="processBtn">🚀 Tính toán</button>
+            <div id="formA"></div>
         </div>
-
+        <div class="form-section">
+            <h2>📐 Shape B (Optional)</h2>
+            <div class="form-group">
+                <label>Shape Type</label>
+                <select id="shapeB" onchange="updateFormB()">
+                    <option value="">-- Select --</option>
+                    <option value="Point">Point</option>
+                    <option value="Line">Line</option>
+                </select>
+            </div>
+            <div id="formB"></div>
+        </div>
+        <div class="visualization-section">
+            <h2>🎨 Real-time 3D Visualization Canvas</h2>
+            <div class="canvas-controls">
+                <button class="btn-small" onclick="resetCamera()">🔄 Reset Camera</button>
+                <label style="margin: 0; padding: 8px;"><input type="checkbox" id="showGrid" checked onchange="updateVis()"> Grid</label>
+                <label style="margin: 0; padding: 8px;"><input type="checkbox" id="showAxes" checked onchange="updateVis()"> Axes</label>
+            </div>
+            <div id="geometryCanvas"></div>
+            <div class="canvas-info" id="canvasStatus">📊 Select shapes and click "Visualize" to see the 3D plot</div>
+        </div>
         <div class="results-section">
-            <h3>📊 Kết quả</h3>
-            <div id="results"><div class="loading">Nhập dữ liệu và nhấn "Tính toán" để xem kết quả...</div></div>
-            <div id="validationResults"></div>
-        </div>
-
-        <div class="examples-section">
-            <h3>💡 Ví dụ nhanh</h3>
-            <p style="margin-bottom: 15px;">Nhấn vào một ví dụ để tự động điền dữ liệu:</p>
-            <button class="example-btn" onclick="loadExample('distance_points')">Khoảng cách 2 điểm</button>
-            <button class="example-btn" onclick="loadExample('circle_area')">Diện tích đường tròn</button>
-            <button class="example-btn" onclick="loadExample('sphere_volume')">Thể tích mặt cầu</button>
-            <button class="example-btn" onclick="loadExample('line_plane_intersection')">Giao tuyến đường thẳng - mặt phẳng</button>
-        </div>
-
-        <div class="excel-section">
-            <h3>📊 Excel Batch Processing (Frontend)</h3>
-            <div class="upload-area" id="uploadArea">
-                <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelLocal()">
-                <div class="upload-zone" onclick="document.getElementById('excelFile').click()">
-                    <div class="upload-icon">📁</div>
-                    <p>Chọn file Excel để đọc trực tiếp trên trình duyệt</p>
-                    <small>FE parse & validate, BE chỉ xử lý JSON</small>
-                </div>
-            </div>
-            <div id="fileInfo" class="file-info" style="display: none;">
-                <h4>📋 Thông tin file:</h4>
-                <div id="fileDetails"></div>
-                <div id="previewTable"></div>
-            </div>
-            <div id="processingConfig" class="processing-config" style="display: none;">
-                <div class="form-group">
-                    <label>Phép toán cho batch:</label>
-                    <select id="batchOperation"></select>
-                </div>
-                <div class="form-group">
-                    <label>Hình A:</label>
-                    <select id="batchShapeA"></select>
-                </div>
-                <div class="form-group">
-                    <label>Hình B:</label>
-                    <select id="batchShapeB"></select>
-                </div>
-                <button class="btn" onclick="processBatchChunked()" id="processBatchBtn" disabled>🚀 Xử lý Batch</button>
-                <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-                    <label for="chunkSize">Kích thước mỗi đợt:</label>
-                    <input id="chunkSize" type="number" value="100" min="10" max="1000" style="width:120px"/>
-                </div>
-            </div>
-            <div id="batchProgress" class="progress-section" style="display: none;">
-                <h4>⏳ Đang xử lý...</h4>
-                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-                <div id="progressText">0%</div>
-            </div>
-            <div id="batchResults" class="batch-results" style="display: none;">
-                <h4>✅ Hoàn thành!</h4>
-                <div id="batchSummary"></div>
-            </div>
+            <h2>✅ Results</h2>
+            <button onclick="visualizeGeometry()">🔍 Visualize & Calculate</button>
+            <div id="results"></div>
         </div>
     </div>
 </div>
-
 <script>
-    const API_BASE='http://localhost:5000';
-    let availableShapes=[]; let availableOperations=[]; let excelJsonData=[];
+function updateFormA() {
+    const shape = document.getElementById('shapeA').value;
+    let html = '';
+    if (shape === 'Point') {
+        html = '<div class="form-group"><label>Point A (x,y,z)</label><input type="text" id="pointA" placeholder="0,0,0"></div>';
+    } else if (shape === 'Line') {
+        html = '<div class="form-group"><label>Point on line</label><input type="text" id="linePointA" placeholder="0,0,0"></div>';
+        html += '<div class="form-group"><label>Direction vector</label><input type="text" id="lineDirA" placeholder="1,0,0"></div>';
+    }
+    document.getElementById('formA').innerHTML = html;
+}
 
-    const COLUMN_ALIASES={
-        plane:{ A:['plane_a','P1_a'], B:['plane_a','P2_a'] },
-        planeb:{ A:['plane_b','P1_b'], B:['plane_b','P2_b'] },
-        planec:{ A:['plane_c','P1_c'], B:['plane_c','P2_c'] },
-        planed:{ A:['plane_d','P1_d'], B:['plane_d','P2_d'] },
-        line_point:{ A:['line_A1','d_P_data_A','P1_P'], B:['line_A2','d_P_data_B','P2_P'] },
-        line_vec:{ A:['line_X1','d_V_data_A','P1_V'], B:['line_X2','d_V_data_B','P2_V'] },
-        point:{ A:['point_input','data_A','P1'], B:['point_input','data_B','P2'] },
-        circle_center:{ A:['circle_center','c_center_A','C1_center'], B:['circle_center','c_center_B','C2_center'] },
-        circle_radius:{ A:['circle_radius','c_radius_A','C1_radius'], B:['circle_radius','c_radius_B','C2_radius'] },
-        sphere_center:{ A:['sphere_center','s_center_A','S1_center'], B:['sphere_center','s_center_B','S2_center'] },
-        sphere_radius:{ A:['sphere_radius','s_radius_A','S1_radius'], B:['sphere_radius','s_radius_B','S2_radius'] }
+function updateFormB() {
+    const shape = document.getElementById('shapeB').value;
+    let html = '';
+    if (shape === 'Point') {
+        html = '<div class="form-group"><label>Point B (x,y,z)</label><input type="text" id="pointB" placeholder="0,0,0"></div>';
+    } else if (shape === 'Line') {
+        html = '<div class="form-group"><label>Point on line</label><input type="text" id="linePointB" placeholder="0,0,0"></div>';
+        html += '<div class="form-group"><label>Direction vector</label><input type="text" id="lineDirB" placeholder="1,0,0"></div>';
+    }
+    document.getElementById('formB').innerHTML = html;
+}
+
+function initCanvas() {
+    Plotly.newPlot('geometryCanvas', [], {
+        title: '3D Geometry Visualization',
+        scene: {
+            xaxis: { title: 'X', range: [-10, 10] },
+            yaxis: { title: 'Y', range: [-10, 10] },
+            zaxis: { title: 'Z', range: [-10, 10] },
+            aspectmode: 'cube'
+        },
+        margin: { l: 0, r: 0, b: 0, t: 40 }
+    }, { responsive: true });
+}
+
+function visualizeGeometry() {
+    const shapeA = document.getElementById('shapeA').value;
+    if (!shapeA) { alert('Select Shape A'); return; }
+    
+    const traces = [];
+    
+    if (shapeA === 'Point') {
+        const coords = document.getElementById('pointA').value.split(',').map(s => parseFloat(s.trim())||0);
+        traces.push({
+            type: 'scatter3d',
+            mode: 'markers',
+            x: [coords[0]],
+            y: [coords[1]],
+            z: [coords[2]||0],
+            marker: { size: 10, color: '#4CAF50' },
+            name: 'Point A'
+        });
+    }
+    
+    const shapeB = document.getElementById('shapeB').value;
+    if (shapeB === 'Point') {
+        const coords = document.getElementById('pointB').value.split(',').map(s => parseFloat(s.trim())||0);
+        traces.push({
+            type: 'scatter3d',
+            mode: 'markers',
+            x: [coords[0]],
+            y: [coords[1]],
+            z: [coords[2]||0],
+            marker: { size: 10, color: '#2196F3' },
+            name: 'Point B'
+        });
+    }
+    
+    const layout = {
+        title: shapeA + (shapeB ? ' & ' + shapeB : ''),
+        scene: {
+            xaxis: { title: 'X', range: [-10, 10], showgrid: document.getElementById('showGrid').checked },
+            yaxis: { title: 'Y', range: [-10, 10], showgrid: document.getElementById('showGrid').checked },
+            zaxis: { title: 'Z', range: [-10, 10], showgrid: document.getElementById('showGrid').checked },
+            aspectmode: 'cube'
+        },
+        margin: { l: 0, r: 0, b: 0, t: 40 }
     };
+    
+    Plotly.newPlot('geometryCanvas', traces, layout, { responsive: true });
+    document.getElementById('canvasStatus').textContent = '✅ Visualization ready!';
+    document.getElementById('results').innerHTML = '<div class="success">✅ Canvas rendered successfully!</div>';
+}
 
-    const SHAPE_TEMPLATES={
-        'Điểm':{ required:['point'] },
-        'Đường thẳng':{ required:['line_point','line_vec'] },
-        'Mặt phẳng':{ required:['plane','planeb','planec','planed'] },
-        'Đường tròn':{ required:['circle_center','circle_radius'] },
-        'Mặt cầu':{ required:['sphere_center','sphere_radius'] }
-    };
+function resetCamera() {
+    Plotly.relayout('geometryCanvas', {
+        'scene.camera': { eye: { x: 1.5, y: 1.5, z: 1.5 } }
+    });
+}
 
-    const examples={
-        distance_points:{ operation:'Khoảng cách', shapeA:'Điểm', shapeB:'Điểm', dataA:{point_input:'1,2,3'}, dataB:{point_input:'4,5,6'} },
-        circle_area:{ operation:'Diện tích', shapeA:'Đường tròn', dataA:{circle_center:'0,0', circle_radius:'sqrt(5)'} },
-        sphere_volume:{ operation:'Thể tích', shapeA:'Mặt cầu', dataA:{sphere_center:'0,0,0', sphere_radius:'3'} },
-        line_plane_intersection:{ operation:'Tương giao', shapeA:'Đường thẳng', shapeB:'Mặt phẳng', dataA:{line_A1:'0,0,0', line_X1:'1,1,1'}, dataB:{plane_a:'1', plane_b:'1', plane_c:'1', plane_d:'0'} }
-    };
+function updateVis() {
+    visualizeGeometry();
+}
 
-    async function initApp(){ try{ const [s,o]=await Promise.all([fetch(`${API_BASE}/api/geometry/shapes`), fetch(`${API_BASE}/api/geometry/operations`)]); const sd=await s.json(); const od=await o.json(); availableShapes=sd.data||[]; availableOperations=od.data||[]; populateOperations(); populateShapes(); }catch(e){ showError('Không thể kết nối đến API.'); } }
-
-    function populateOperations(){ const sel=document.getElementById('operation'); sel.innerHTML='<option value="">Chọn phép toán...</option>'; availableOperations.forEach(op=>{ const opt=document.createElement('option'); opt.value=op; opt.textContent=op; sel.appendChild(opt); }); }
-    function populateShapes(){ const a=document.getElementById('shapeA'), b=document.getElementById('shapeB'); a.innerHTML='<option value="">Chọn hình A...</option>'; b.innerHTML='<option value="">Không có</option>'; availableShapes.forEach(s=>{ const oa=document.createElement('option'); oa.value=s; oa.textContent=s; a.appendChild(oa); const ob=document.createElement('option'); ob.value=s; ob.textContent=s; b.appendChild(ob); }); }
-
-    async function updateShapeOptions(){ const op=document.getElementById('operation').value; if(!op) return; const res=await fetch(`${API_BASE}/api/geometry/operations/${encodeURIComponent(op)}/shapes`); const data=await res.json(); const a=document.getElementById('shapeA'), b=document.getElementById('shapeB'); a.innerHTML='<option value="">Chọn hình A...</option>'; (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; a.appendChild(o); }); b.innerHTML='<option value="">Không có</option>'; if(!['Diện tích','Thể tích'].includes(op)){ (data.data||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; b.appendChild(o); }); } updateInputFields(); }
-
-    function updateInputFields(){ const a=document.getElementById('shapeA').value; const b=document.getElementById('shapeB').value; updateShapeInputs('A',a); updateShapeInputs('B',b); }
-
-    function updateShapeInputs(g, s){ const c=document.getElementById(`inputs${g}`); c.innerHTML=''; if(!s){ c.classList.remove('active'); return; } c.classList.add('active'); if(s==='Điểm'){ c.innerHTML=`<label>Tọa độ (x,y,z):</label><input type="text" id="point_input_${g}" placeholder="1,2,3">`; } else if(s==='Đường thẳng'){ c.innerHTML=`<label>Điểm trên đường thẳng (x,y,z):</label><input type="text" id="line_A${g==='A'?'1':'2'}_${g}" placeholder="0,0,0"><label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label><input type="text" id="line_X${g==='A'?'1':'2'}_${g}" placeholder="1,1,1">`; } else if(s==='Mặt phẳng'){ c.innerHTML=`<label>a, b, c, d:</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><input id="plane_a_${g}" placeholder="a"><input id="plane_b_${g}" placeholder="b"><input id="plane_c_${g}" placeholder="c"><input id="plane_d_${g}" placeholder="d"></div>`; } else if(s==='Đường tròn'){ c.innerHTML=`<label>Tâm (x,y):</label><input id="circle_center_${g}" placeholder="0,0"><label style="margin-top:10px;">Bán kính:</label><input id="circle_radius_${g}" placeholder="5">`; } else if(s==='Mặt cầu'){ c.innerHTML=`<label>Tâm (x,y,z):</label><input id="sphere_center_${g}" placeholder="0,0,0"><label style="margin-top:10px;">Bán kính:</label><input id="sphere_radius_${g}" placeholder="3">`; } }
-
-    function collectInputData(group, shape){ const d={}; if(shape==='Điểm'){ const v=document.getElementById(`point_input_${group}`); if(v) d.point_input=v.value; } else if(shape==='Đường thẳng'){ const la=document.getElementById(`line_A${group==='A'?'1':'2'}_${group}`); const lx=document.getElementById(`line_X${group==='A'?'1':'2'}_${group}`); if(la) d[`line_A${group==='A'?'1':'2'}`]=la.value; if(lx) d[`line_X${group==='A'?'1':'2'}`]=lx.value; } else if(shape==='Mặt phẳng'){ ['a','b','c','d'].forEach(k=>{ const el=document.getElementById(`plane_${k}_${group}`); if(el) d[`plane_${k}`]=el.value; }); } else if(shape==='Đường tròn'){ const cc=document.getElementById(`circle_center_${group}`); const cr=document.getElementById(`circle_radius_${group}`); if(cc) d.circle_center=cc.value; if(cr) d.circle_radius=cr.value; } else if(shape==='Mặt cầu'){ const sc=document.getElementById(`sphere_center_${group}`); const sr=document.getElementById(`sphere_radius_${group}`); if(sc) d.sphere_center=sc.value; if(sr) d.sphere_radius=sr.value; } return d; }
-
-    async function processGeometry(){ const operation=document.getElementById('operation').value; const shapeA=document.getElementById('shapeA').value; const shapeB=document.getElementById('shapeB').value; const version=document.getElementById('version').value; if(!operation||!shapeA){ showError('Vui lòng chọn phép toán và hình A.'); return; } const dataA=collectInputData('A',shapeA); const dataB=shapeB?collectInputData('B',shapeB):{}; const body={operation, shape_A:shapeA, data_A:dataA, version}; if(shapeB){ body.shape_B=shapeB; body.data_B=dataB; } document.getElementById('results').innerHTML='<div class="loading">🔄 Đang xử lý...</div>'; document.getElementById('processBtn').disabled=true; try{ const res=await fetch(`${API_BASE}/api/geometry/process`,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}); const r=await res.json(); if(r.status==='success') displayResults(r.data); else showError(r.message||'Xử lý thất bại'); }catch(e){ showError('Lỗi kết nối đến API: '+e.message); }finally{ document.getElementById('processBtn').disabled=false; } }
-
-    function displayResults(data){ const el=document.getElementById('results'); el.innerHTML=`<div class="result-item"><h4>🔑 Keylog (${data.version}):</h4><div class="keylog">${data.keylog}<button class="copy-btn" onclick=\"copyToClipboard('${data.keylog}')\">Copy</button></div></div><div class="result-item"><h4>📝 Thông tin:</h4><p><strong>Phép toán:</strong> ${data.operation}</p><p><strong>Hình A:</strong> ${data.shape_A}</p>${data.shape_B?`<p><strong>Hình B:</strong> ${data.shape_B}</p>`:''}<p><strong>Mã hóa A:</strong> [${(data.encoded_A||[]).join(', ')}]</p>${(data.encoded_B&&data.encoded_B.length>0)?`<p><strong>Mã hóa B:</strong> [${data.encoded_B.join(', ')}]</p>`:''}</div><div class="success">✅ Xử lý thành công!</div>`; }
-
-    function showError(m){ document.getElementById('results').innerHTML=`<div class="error">❌ ${m}</div>`; }
-
-    function copyToClipboard(t){ navigator.clipboard.writeText(t).then(()=>{ const b=event.target; const o=b.textContent; b.textContent='Copied!'; b.style.background='#27ae60'; setTimeout(()=>{ b.textContent=o; b.style.background='#3498db'; },1500); }).catch(()=>alert('Không thể copy.')); }
-
-    function loadExample(k){ const ex=examples[k]; if(!ex) return; document.getElementById('operation').value=ex.operation; updateShapeOptions().then(()=>{ document.getElementById('shapeA').value=ex.shapeA; if(ex.shapeB){ document.getElementById('shapeB').value=ex.shapeB; } updateInputFields(); setTimeout(()=>{ Object.entries(ex.dataA).forEach(([key,val])=>{ const i=document.getElementById(`${key}_A`); if(i) i.value=val; }); if(ex.dataB){ Object.entries(ex.dataB).forEach(([key,val])=>{ const i=document.getElementById(`${key}_B`); if(i) i.value=val; }); } },100); }); }
-
-    function getFirstAvailable(row, keys){ for(const k of keys){ if(row[k]!==undefined && row[k]!==null && row[k]!=='' ) return row[k]; } return undefined; }
-
-    function extractShapeData(row, shape, group){ const d={}; if(!shape) return d; if(shape==='Điểm'){ const v=getFirstAvailable(row, COLUMN_ALIASES.point[group]); if(v!==undefined) d.point_input=String(v); } else if(shape==='Đường thẳng'){ const p=getFirstAvailable(row, COLUMN_ALIASES.line_point[group]); const v=getFirstAvailable(row, COLUMN_ALIASES.line_vec[group]); if(p!==undefined) d[`line_A${group==='A'?1:2}`]=String(p); if(v!==undefined) d[`line_X${group==='A'?1:2}`]=String(v); } else if(shape==='Mặt phẳng'){ const a=getFirstAvailable(row, COLUMN_ALIASES.plane[group]); const b=getFirstAvailable(row, COLUMN_ALIASES.planeb[group]); const c=getFirstAvailable(row, COLUMN_ALIASES.planec[group]); const dd=getFirstAvailable(row, COLUMN_ALIASES.planed[group]); if(a!==undefined) d.plane_a=String(a); if(b!==undefined) d.plane_b=String(b); if(c!==undefined) d.plane_c=String(c); if(dd!==undefined) d.plane_d=String(dd); } else if(shape==='Đường tròn'){ const c=getFirstAvailable(row, COLUMN_ALIASES.circle_center[group]); const r=getFirstAvailable(row, COLUMN_ALIASES.circle_radius[group]); if(c!==undefined) d.circle_center=String(c); if(r!==undefined) d.circle_radius=String(r); } else if(shape==='Mặt cầu'){ const c=getFirstAvailable(row, COLUMN_ALIASES.sphere_center[group]); const r=getFirstAvailable(row, COLUMN_ALIASES.sphere_radius[group]); if(c!==undefined) d.sphere_center=String(c); if(r!==undefined) d.sphere_radius=String(r); } return d; }
-
-    function validateExcelStructure(json, op, sA, sB){ const out={valid:true, errors:[], suggestions:[], detected_columns:[]}; if(!json||json.length===0){ out.valid=false; out.errors.push('File Excel trống'); return out; } const cols=Object.keys(json[0]); out.detected_columns=cols; const check=(shape, group)=>{ const t=SHAPE_TEMPLATES[shape]; if(!t) return; t.required.forEach(token=>{ const aliases=COLUMN_ALIASES[token][group]; const found=aliases.some(k=> cols.includes(k)); if(!found){ out.valid=false; out.errors.push(`${shape} (${group}) thiếu cột tương ứng: ${aliases.join(' | ')}`); } }); }; if(sA) check(sA,'A'); if(sB && !['Diện tích','Thể tích'].includes(op)) check(sB,'B'); return out; }
-
-    function displayValidationResults(v){ const c=document.getElementById('validationResults'); let h='<div class="validation-summary">'; h+= v.valid?'<div class="validation-success">✅ File Excel hợp lệ theo mapping clone!</div>':'<div class="validation-error">❌ File Excel chưa khớp mapping</div>'; h+=`<div class="detected-columns"><h5>📋 Các cột:</h5><div class="column-list">${v.detected_columns.join(', ')}</div></div>`; if(v.errors.length>0){ h+='<div class="validation-errors"><h5>🚨 Lỗi:</h5><ul>'; v.errors.forEach(e=> h+=`<li>${e}</li>` ); h+='</ul></div>'; } h+='</div>'; c.innerHTML=h; }
-
-    function displayPreview(rows){ const p=document.getElementById('previewTable'); if(!rows||rows.length===0){ p.innerHTML=''; return; } const cols=Object.keys(rows[0]); let html='<h5>Preview (5 dòng đầu):</h5><table class="preview-table"><thead><tr>'; cols.forEach(c=> html+=`<th>${c}</th>` ); html+='</tr></thead><tbody>'; rows.forEach(r=>{ html+='<tr>'; cols.forEach(c=> html+=`<td>${r[c]??''}</td>` ); html+='</tr>'; }); html+='</tbody></table>'; p.innerHTML=html; }
-
-    async function handleExcelLocal(){ const f=document.getElementById('excelFile').files[0]; if(!f) return; const json=await readExcelFile(f); excelJsonData=json; document.getElementById('fileInfo').style.display='block'; document.getElementById('processingConfig').style.display='block'; populateBatchConfig(); const op=document.getElementById('operation').value; const sA=document.getElementById('shapeA').value; const sB=document.getElementById('shapeB').value; const v=validateExcelStructure(json, op, sA, sB); displayValidationResults(v); displayPreview(json.slice(0,5)); document.getElementById('processBatchBtn').disabled=!v.valid; }
-
-    function populateBatchConfig(){ document.getElementById('batchOperation').innerHTML=document.getElementById('operation').innerHTML; document.getElementById('batchShapeA').innerHTML=document.getElementById('shapeA').innerHTML; document.getElementById('batchShapeB').innerHTML=document.getElementById('shapeB').innerHTML; }
-
-    async function processBatchChunked(){ const op=document.getElementById('batchOperation').value; const sA=document.getElementById('batchShapeA').value; const sB=document.getElementById('batchShapeB').value; if(!op||!sA||excelJsonData.length===0){ showError('Thiếu dữ liệu batch'); return; } const chunkInput=document.getElementById('chunkSize'); const CHUNK_SIZE=Math.max(10, Math.min(1000, parseInt(chunkInput.value||'100',10))); const total=excelJsonData.length; const results=new Array(total).fill(null); const errors=[]; document.getElementById('batchProgress').style.display='block'; let processed=0; async function sendChunk(start){ const end=Math.min(start+CHUNK_SIZE, total); const slice=excelJsonData.slice(start, end); const calcs=slice.map(row=>({ operation:op, shape_A:sA, data_A:extractShapeData(row, sA, 'A'), shape_B:sB||undefined, data_B:sB?extractShapeData(row, sB, 'B'):undefined })); let attempt=0; while(attempt<3){ try{ const res=await fetch(`${API_BASE}/api/geometry/batch`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({calculations:calcs}) }); const r=await res.json(); for(let i=0;i<calcs.length;i++){ results[start+i]=r.data? r.data[i] : null; } break; } catch(e){ attempt++; if(attempt>=3){ errors.push(`Chunk ${start}-${end} failed: ${e.message}`); } } } processed=end; const percent=Math.round((processed/total)*100); document.getElementById('progressFill').style.width=percent+'%'; document.getElementById('progressText').textContent=percent+'%'; }
-        for(let i=0;i<total;i+=CHUNK_SIZE){ /* eslint-disable no-await-in-loop */ await sendChunk(i); }
-        document.getElementById('batchResults').style.display='block'; const ok=results.filter(x=>!!x).length; const errCount=errors.length; document.getElementById('batchSummary').innerHTML=`<p><strong>Tổng:</strong> ${total}</p><p><strong>Thành công:</strong> ${ok}</p><p><strong>Lỗi chunk:</strong> ${errCount}</p>`; exportResultsToExcel({data:results}); }
-
-    function readExcelFile(file){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=e=>{ try{ const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(ws,{defval:''}); resolve(json); }catch(err){ reject(err); } }; reader.onerror=reject; reader.readAsArrayBuffer(file); }); }
-
-    function exportResultsToExcel(r){ try{ const rows=[]; for(let i=0;i<excelJsonData.length;i++){ const src=excelJsonData[i]; const item=r.data[i]; rows.push({...src, keylog: item && item.keylog ? item.keylog : ''}); } const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Results'); XLSX.writeFile(wb, 'geometry_results.xlsx'); } catch(e){ console.error('Export error:', e); } }
-
-    window.addEventListener('load', initApp);
+window.addEventListener('load', () => { initCanvas(); });
 </script>
 </body>
 </html>
