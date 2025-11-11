@@ -13,7 +13,7 @@ class GeometryAPI:
         self.main_config = self.config_loader.get_main()
         
         # Load geometry configuration pieces
-        self.geometry_mappings = self.config_loader.get_geometry_mappings().get('latex_to_calculator_mappings', [])
+        self.geometry_mappings = self.config_loader.get_geometry_mappings().get('mappings', [])
         self.geometry_ops = self.config_loader.get_geometry_operations()
         self.geometry_shapes = self.config_loader.get_geometry_shapes()
         self.encoding_opts = self.config_loader.get_encoding_options()
@@ -44,31 +44,60 @@ class GeometryAPI:
 
     # ===== Encoding =====
     def encode_string(self, input_string: str) -> str:
+        """
+        Encode input string using config-driven mapping rules
+        Supports both regex and literal replacements
+        """
         if not input_string:
             return ""
-        text = input_string
+
+        # Convert to string and trim spaces
+        text = str(input_string)
         if self.encoding_opts.get('trim_spaces', True):
             text = text.replace(' ', '')
-        
-        # Priority: sqrt(...) first (paren form)
+
+        # Priority 1: Handle sqrt(...) with parentheses first
         if self.encoding_opts.get('support_sqrt_paren', True):
             try:
+                # Match \sqrt(x) or sqrt(x) and convert to sx)
                 text = re.sub(r"\\?sqrt\(([^()]+)\)", r"s\1)", text)
-            except Exception:
-                pass
-        
-        # Apply configured rules in order
-        for rule in self.geometry_mappings:
+            except Exception as e:
+                print(f"[WARN] sqrt pattern failed: {e}")
+
+        # Priority 2: Apply all mapping rules in order
+        for idx, rule in enumerate(self.geometry_mappings):
             find = rule.get('find', '')
             replace = rule.get('replace', '')
             rtype = rule.get('type', 'literal')
+
+            if not find:
+                continue
+
             try:
+                original = text
+
                 if rtype == 'regex':
                     text = re.sub(find, replace, text)
-                else:
+                elif rtype == 'literal':
                     text = text.replace(find, replace)
-            except Exception:
+                else:
+                    print(f"[WARN] Unknown mapping type at index {idx}: {rtype}")
+
+                # Debug logging (optional - comment out in production)
+                if text != original:
+                    desc = rule.get('description', 'no description')
+                    print(f"[DEBUG] Applied rule {idx}: {desc}")
+                    print(f"  Before: {original}")
+                    print(f"  After: {text}")
+
+            except Exception as e:
+                desc = rule.get('description', f'rule #{idx}')
+                print(f"[ERROR] Mapping failed ({desc}): {e}")
+                print(f"  Find: {find}")
+                print(f"  Replace: {replace}")
+                print(f"  Type: {rtype}")
                 continue
+
         return text
 
     # ===== Validation =====

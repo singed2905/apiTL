@@ -84,7 +84,7 @@ class PolynomialAPI:
         prefix = self.prefixes_config['prefixes'].get(version, {}).get(degree, 'w52')
         suffix = self.prefixes_config.get('suffix', '=')
         encoded_coeffs = [self.encode_latex(str(c)) for c in coefficients]
-        return prefix + '='.join(encoded_coeffs) + suffix
+        return prefix + '='.join(encoded_coeffs) + suffix+"="
 
     def solve_polynomial(self, degree: str, coefficients: list) -> dict:
         try:

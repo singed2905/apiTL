@@ -1,40 +1,112 @@
 {
   "latex_evaluations": [
     {
-      "pattern": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}",
-      "replacement": "(\\1)/(\\2)",
-      "type": "regex",
-      "description": "Convert LaTeX fraction \\frac{a}{b} to evaluable (a)/(b)"
-    },
-    {
-      "pattern": "\\\\sqrt\\{([^{}]+)\\}",
+      "pattern": "\\\\sqrt\\{([^}]+)\\}",
       "replacement": "math.sqrt(\\1)",
       "type": "regex",
-      "description": "Convert LaTeX sqrt with backslash \\sqrt{x} to math.sqrt(x)"
+      "description": "\\sqrt{x} → math.sqrt(x)"
     },
     {
-      "pattern": "sqrt\\{([^{}]+)\\}",
+      "pattern": "sqrt\\{([^}]+)\\}",
       "replacement": "math.sqrt(\\1)",
       "type": "regex",
-      "description": "Convert sqrt without backslash sqrt{x} to math.sqrt(x)"
+      "description": "sqrt{x} → math.sqrt(x)"
     },
     {
-      "pattern": "\\{",
-      "replacement": "(",
-      "type": "literal",
-      "description": "Replace opening brace { with ("
+      "pattern": "\\\\sqrt\\(([^)]+)\\)",
+      "replacement": "math.sqrt(\\1)",
+      "type": "regex",
+      "description": "\\sqrt(x) → math.sqrt(x)"
     },
     {
-      "pattern": "\\}",
-      "replacement": ")",
+      "pattern": "sqrt\\(([^)]+)\\)",
+      "replacement": "math.sqrt(\\1)",
+      "type": "regex",
+      "description": "sqrt(x) → math.sqrt(x)"
+    },
+    {
+      "pattern": "\\\\frac\\{([^}]+)\\}\\{([^}]+)\\}",
+      "replacement": "((\\1)/(\\2))",
+      "type": "regex",
+      "description": "\\frac{a}{b} → ((a)/(b))"
+    },
+    {
+      "pattern": "\\\\sin\\(([^)]+)\\)",
+      "replacement": "math.sin(\\1)",
+      "type": "regex",
+      "description": "\\sin(x) → math.sin(x)"
+    },
+    {
+      "pattern": "sin\\(([^)]+)\\)",
+      "replacement": "math.sin(\\1)",
+      "type": "regex",
+      "description": "sin(x) → math.sin(x)"
+    },
+    {
+      "pattern": "\\\\cos\\(([^)]+)\\)",
+      "replacement": "math.cos(\\1)",
+      "type": "regex",
+      "description": "\\cos(x) → math.cos(x)"
+    },
+    {
+      "pattern": "cos\\(([^)]+)\\)",
+      "replacement": "math.cos(\\1)",
+      "type": "regex",
+      "description": "cos(x) → math.cos(x)"
+    },
+    {
+      "pattern": "\\\\tan\\(([^)]+)\\)",
+      "replacement": "math.tan(\\1)",
+      "type": "regex",
+      "description": "\\tan(x) → math.tan(x)"
+    },
+    {
+      "pattern": "tan\\(([^)]+)\\)",
+      "replacement": "math.tan(\\1)",
+      "type": "regex",
+      "description": "tan(x) → math.tan(x)"
+    },
+    {
+      "pattern": "\\\\ln\\(([^)]+)\\)",
+      "replacement": "math.log(\\1)",
+      "type": "regex",
+      "description": "\\ln(x) → math.log(x)"
+    },
+    {
+      "pattern": "ln\\(([^)]+)\\)",
+      "replacement": "math.log(\\1)",
+      "type": "regex",
+      "description": "ln(x) → math.log(x)"
+    },
+    {
+      "pattern": "\\\\log\\(([^)]+)\\)",
+      "replacement": "math.log10(\\1)",
+      "type": "regex",
+      "description": "\\log(x) → math.log10(x)"
+    },
+    {
+      "pattern": "log\\(([^)]+)\\)",
+      "replacement": "math.log10(\\1)",
+      "type": "regex",
+      "description": "log(x) → math.log10(x)"
+    },
+    {
+      "pattern": "\\\\pi",
+      "replacement": "math.pi",
       "type": "literal",
-      "description": "Replace closing brace } with )"
+      "description": "\\pi → math.pi"
+    },
+    {
+      "pattern": "pi",
+      "replacement": "math.pi",
+      "type": "literal",
+      "description": "pi → math.pi"
     },
     {
       "pattern": "\\^",
       "replacement": "**",
-      "type": "literal",
-      "description": "Replace LaTeX exponent ^ with Python exponent **"
+      "type": "regex",
+      "description": "^ → ** (power operator)"
     }
   ]
 }

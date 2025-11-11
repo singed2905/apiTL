@@ -142,24 +142,35 @@ class EquationProcessor:
             encoded_coeff = self._apply_tl_mappings(coeff.strip())
             encoded.append(encoded_coeff)
         return encoded
-    
+
     def _apply_tl_mappings(self, text: str) -> str:
         """Apply LaTeX to keylog mappings from config"""
-        if not text: return "0"
+        if not text:
+            return "0"
+
         result = text
-        
-        # Apply each mapping rule
+
+        # Apply each mapping rule from config
         for mapping in self.mappings:
             try:
-                if mapping.get('type') == 'regex':
-                    pattern = mapping['find']
-                    replacement = mapping['replace']
-                    result = re.sub(pattern, replacement, result)
+                find = mapping.get('find', '')
+                replace = mapping.get('replace', '')
+                rtype = mapping.get('type', 'literal')
+
+                if not find:
+                    continue
+
+                # ✅ FIX: Support both regex and literal
+                if rtype == 'regex':
+                    result = re.sub(find, replace, result)
+                else:  # literal
+                    result = result.replace(find, replace)
+
             except Exception as e:
                 print(f"[WARN] Mapping rule failed: {mapping.get('description', 'unknown')}: {e}")
-        
+
         return result
-    
+
     def _generate_keylog_tl(self, encoded_coeffs: List[str], variables: int, version: str) -> str:
         """Generate TL-compatible keylog using prefixes from clone repo"""
         try:
