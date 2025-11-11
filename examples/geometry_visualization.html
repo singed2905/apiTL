@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Visualization Canvas (Plotly.js)</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f9fafd; color: #222; min-height: 100vh; padding: 40px;}
+        .container {max-width: 1000px; margin: 0 auto; background: white; border-radius: 14px; box-shadow: 0 8px 40px rgba(0,0,0,0.08); padding: 30px 30px 60px;}
+        h2 {color: #2C3E50; letter-spacing: 1px;}
+        label {font-weight: bold; margin-top: 18px; display: block;}
+        select, input[type=text] {font-size: 15px; padding: 9px; border-radius: 6px; border: 1.5px solid #b9c2ca; margin-top: 8px; width: 100%;}
+        button {background: linear-gradient(90deg, #1976d2, #43a047); color: white; border: none; font-weight: bold; padding: 12px 24px; border-radius: 6px; margin-top: 18px; font-size: 16px; cursor: pointer;}
+        button:hover {background: linear-gradient(90deg, #1565c0 30%, #339933 100%);}
+        #geometryCanvas {margin: 30px 0 0; width: 100%; height: 480px; border-radius: 10px; background: #f8f9fa; border: 2px solid #dde4ea;}
+        #canvasStatus {padding: 12px; color: #1976D2; background: #e3f2fd; border-radius: 5px; margin-top:10px;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🎨 Geometry 2D/3D Visualization – Plotly.js</h2>
+    <p>Vẽ trực quan điểm, đường thẳng, mặt phẳng, đường tròn, mặt cầu trên hệ tọa độ.</p>
+    <label for="shapeA">Chọn hình:</label>
+    <select id="shapeA" onchange="showShapeInputs()">
+        <option value="">-- Chọn hình học --</option>
+        <option value="Điểm">Điểm</option>
+        <option value="Đường thẳng">Đường thẳng</option>
+        <option value="Mặt phẳng">Mặt phẳng</option>
+        <option value="Đường tròn">Đường tròn</option>
+        <option value="Mặt cầu">Mặt cầu</option>
+    </select>
+    <div id="inputsA" style="margin-bottom:20px;"></div>
+    <button onclick="visualizeGeometry()">Vẽ hình</button>
+    <div id="canvasStatus">Nhập dữ liệu và nhấn Vẽ để xem trực quan.</div>
+    <div id="geometryCanvas"></div>
+</div>
+<script>
+function showShapeInputs() {
+    const s = document.getElementById('shapeA').value;
+    let html='';
+    if(s==='Điểm') {
+        html = '<label>Tọa độ (x,y,z):</label><input type="text" id="point_input_A" placeholder="vd: 3,1,0">';
+    } else if(s==='Đường thẳng') {
+        html = '<label>Điểm trên đường thẳng (x,y,z):</label><input type="text" id="line_A1_A" placeholder="0,0,0">'+
+               '<label style="margin-top:10px;">Vector chỉ phương (dx,dy,dz):</label><input type="text" id="line_X1_A" placeholder="1,2,3">';
+    } else if(s==='Mặt phẳng') {
+        html = '<label>a, b, c, d (phương trình ax + by + cz + d = 0):</label>'+
+               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+               '<input id="plane_a_A" placeholder="a"><input id="plane_b_A" placeholder="b">'+
+               '<input id="plane_c_A" placeholder="c"><input id="plane_d_A" placeholder="d"></div>';
+    } else if(s==='Đường tròn') {
+        html = '<label>Tâm (x,y):</label><input id="circle_center_A" placeholder="0,0">'+
+               '<label style="margin-top:10px;">Bán kính:</label><input id="circle_radius_A" placeholder="5">';
+    } else if(s==='Mặt cầu') {
+        html = '<label>Tâm (x,y,z):</label><input id="sphere_center_A" placeholder="0,0,0">'+
+               '<label style="margin-top:10px;">Bán kính:</label><input id="sphere_radius_A" placeholder="3">';
+    }
+    document.getElementById('inputsA').innerHTML = html;
+}
+
+function parseCoordinates(str, dim=3) {
+    if (!str) return null;
+    const vals = str.split(',').map(s => {
+        s = s.trim().replace('sqrt', 'Math.sqrt').replace('pi', 'Math.PI');
+        try { return eval(s); } catch { return parseFloat(s)||0; }
+    });
+    while(vals.length < dim) vals.push(0);
+    return vals.slice(0, dim);
+}
+
+function visualizeGeometry() {
+    const shape = document.getElementById('shapeA').value;
+    let traces=[];
+    if(shape==='Điểm') {
+        const coords = parseCoordinates(document.getElementById('point_input_A').value);
+        if(coords) traces.push({type:'scatter3d',mode:'markers',x:[coords[0]],y:[coords[1]],z:[coords[2]],marker:{size:10,color:'#43a047'},name:'Điểm'});
+    }
+    else if(shape==='Đường thẳng') {
+        const p = parseCoordinates(document.getElementById('line_A1_A').value);
+        const v = parseCoordinates(document.getElementById('line_X1_A').value);
+        let x=[],y=[],z=[];
+        for(let t=-10;t<=10;t+=.25) {x.push(p[0]+t*v[0]); y.push(p[1]+t*v[1]); z.push(p[2]+t*v[2]);}
+        traces.push({type:'scatter3d',mode:'lines',x,y,z,line:{color:'#1976d2',width:4},name:'Đường thẳng'});
+        traces.push({type:'scatter3d',mode:'markers',x:[p[0]],y:[p[1]],z:[p[2]],marker:{size:7,color:'#43a047'},name:'Điểm gốc',showlegend:false});
+    }
+    else if(shape==='Mặt phẳng') {
+        const a = parseFloat(document.getElementById('plane_a_A').value)||0,
+              b = parseFloat(document.getElementById('plane_b_A').value)||0,
+              c = parseFloat(document.getElementById('plane_c_A').value)||0,
+              d = parseFloat(document.getElementById('plane_d_A').value)||0;
+        const size=10,step=1; let x_mesh=[],y_mesh=[],z_mesh=[];
+        for(let xi=-size;xi<=size;xi+=step){ let x_row=[],y_row=[],z_row=[];
+            for(let yi=-size;yi<=size;yi+=step){x_row.push(xi);y_row.push(yi);
+                if(Math.abs(c)>0.01)z_row.push(-(a*xi+b*yi+d)/c); else if(Math.abs(b)>0.01)y_row[y_row.length-1]=-(a*xi+c*yi+d)/b,z_row.push(yi);else z_row.push(0);
+            }
+            x_mesh.push(x_row); y_mesh.push(y_row); z_mesh.push(z_row);
+        }
+        traces.push({type:'surface',x:x_mesh,y:y_mesh,z:z_mesh,colorscale:[[0,'#1976d2'],[1,'#43a047']],opacity:0.7,showscale:false,name:'Mặt phẳng',hoverinfo:'name'});
+    }
+    else if(shape==='Đường tròn') {
+        const center = parseCoordinates(document.getElementById('circle_center_A').value,2), r = parseFloat(document.getElementById('circle_radius_A').value)||1;
+        let x=[],y=[],z=[]; for(let t=0;t<=2*Math.PI;t+=.07){x.push(center[0]+r*Math.cos(t));y.push(center[1]+r*Math.sin(t));z.push(0);}
+        traces.push({type:'scatter3d',mode:'lines',x,y,z,line:{color:'#d81b60',width:4},name:'Đường tròn'});
+        traces.push({type:'scatter3d',mode:'markers',x:[center[0]],y:[center[1]],z:[0],marker:{size:8,color:'#43a047'},name:'Tâm',showlegend:false});
+    }
+    else if(shape==='Mặt cầu') {
+        const center = parseCoordinates(document.getElementById('sphere_center_A').value), r=parseFloat(document.getElementById('sphere_radius_A').value)||1;
+        let x_mesh=[],y_mesh=[],z_mesh=[];
+        for(let phi=0;phi<=Math.PI;phi+=Math.PI/20){let x_row=[],y_row=[],z_row=[];
+            for(let theta=0;theta<=2*Math.PI;theta+=Math.PI/20){
+                x_row.push(center[0]+r*Math.sin(phi)*Math.cos(theta));
+                y_row.push(center[1]+r*Math.sin(phi)*Math.sin(theta));
+                z_row.push(center[2]+r*Math.cos(phi));
+            }x_mesh.push(x_row);y_mesh.push(y_row);z_mesh.push(z_row);
+        }
+        traces.push({type:'surface',x:x_mesh,y:y_mesh,z:z_mesh,colorscale:[[0,'#1976d2'],[1,'#43a047']],opacity:0.6,showscale:false,name:'Mặt cầu',hoverinfo:'name'});
+        traces.push({type:'scatter3d',mode:'markers',x:[center[0]],y:[center[1]],z:[center[2]],marker:{size:8,color:'#43a047'},name:'Tâm',showlegend:false});
+    }
+    if(!traces.length){document.getElementById('canvasStatus').textContent='Không có dữ liệu hoặc input sai!';return;}
+    Plotly.newPlot('geometryCanvas', traces, {
+        title:'Visualization',
+        scene: {xaxis:{title:'X',range:[-12,12],showgrid:true},yaxis:{title:'Y',range:[-12,12],showgrid:true},zaxis:{title:'Z',range:[-12,12],showgrid:true},aspectmode:'cube'},
+        margin:{l:0,r:0,b:0,t:40},showlegend:true
+    },{responsive:true});
+    document.getElementById('canvasStatus').textContent='Vẽ thành công!';
+}
+</script>
+</body>
+</html>
