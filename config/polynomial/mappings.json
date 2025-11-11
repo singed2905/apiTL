@@ -2,7 +2,7 @@
     "mappings": [
         {
             "find": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}",
-            "replace": "$1a$2",
+            "replace": "\\1a\\2",
             "type": "regex",
             "description": "Chuyển phân số \\frac{x}{y} thành dạng x a y"
         },

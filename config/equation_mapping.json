@@ -2,15 +2,15 @@
     "mappings": [
         {
             "find": "\\\\frac\\{([^{}]+)\\}\\{([^{}]+)\\}",
-            "replace": "$1a$2",
+            "replace": "\\1a\\2",
             "type": "regex",
-            "description": "Chuyển phân số \\\\frac{x}{y} thành dạng x a y"
+            "description": "Chuyển phân số \\frac{x}{y} thành dạng x a y"
         },
         {
-            "find": "\\-",
+            "find": "-",
             "replace": "p",
-            "type": "regex",
-            "description": "Dấu âm (trừ) ở đầu chuỗi (sau khoảng trắng) thành 'p'"
+            "type": "literal",
+            "description": "Dấu trừ (-) thành 'p'"
         },
         {
             "find": "\\*",
@@ -52,49 +52,49 @@
             "find": "\\\\sin\\(",
             "replace": "j(",
             "type": "regex",
-            "description": "Hàm sin(x) có dấu \\\\ → S(x)"
+            "description": "Hàm sin(x) có dấu \\\\ → j(x)"
         },
         {
             "find": "sin\\(",
             "replace": "j(",
             "type": "regex",
-            "description": "Hàm sin(x) không dấu \\\\ → S(x)"
+            "description": "Hàm sin(x) không dấu \\\\ → j(x)"
         },
         {
             "find": "\\\\cos\\(",
             "replace": "k(",
             "type": "regex",
-            "description": "Hàm cos(x) có dấu \\\\ → C(x)"
+            "description": "Hàm cos(x) có dấu \\\\ → k(x)"
         },
         {
             "find": "cos\\(",
             "replace": "k(",
             "type": "regex",
-            "description": "Hàm cos(x) không dấu \\\\ → C(x)"
+            "description": "Hàm cos(x) không dấu \\\\ → k(x)"
         },
         {
             "find": "\\\\tan\\(",
             "replace": "l(",
             "type": "regex",
-            "description": "Hàm tan(x) có dấu \\\\ → T(x)"
+            "description": "Hàm tan(x) có dấu \\\\ → l(x)"
         },
         {
             "find": "tan\\(",
             "replace": "l(",
             "type": "regex",
-            "description": "Hàm tan(x) không dấu \\\\ → T(x)"
+            "description": "Hàm tan(x) không dấu \\\\ → l(x)"
         },
         {
             "find": "\\\\ln\\(",
             "replace": "h(",
             "type": "regex",
-            "description": "Hàm ln(x) có dấu \\\\ → L(x)"
+            "description": "Hàm ln(x) có dấu \\\\ → h(x)"
         },
         {
             "find": "ln\\(",
             "replace": "h(",
             "type": "regex",
-            "description": "Hàm ln(x) không dấu \\\\ → h("
+            "description": "Hàm ln(x) không dấu \\\\ → h(x)"
         },
         {
             "find": "\\}",
@@ -117,7 +117,7 @@
         {
             "find": "_",
             "replace": "_",
-            "type": "regex",
+            "type": "literal",
             "description": "Dấu chỉ số dưới _ giữ nguyên"
         }
     ]
