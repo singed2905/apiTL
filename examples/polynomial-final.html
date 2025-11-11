@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial API Test - Final</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .tab:hover { background: #e8e8e8; }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        .tab-content { display: none; padding: 30px; }
+        .tab-content.active { display: block; }
+        .section { margin-bottom: 30px; }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        select, input[type="text"], input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .coefficients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .coefficient-input label { font-size: 13px; color: #666; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .button-group { display: flex; gap: 15px; margin-top: 20px; }
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary { background: #f5f5f5; color: #333; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        .drop-zone:hover { background: #e8eef7; border-color: #764ba2; }
+        .drop-zone.dragover { background: #d0e0f7; border-color: #667eea; }
+        .drop-zone-icon { font-size: 48px; margin-bottom: 10px; }
+        .drop-zone-text { font-size: 16px; color: #666; }
+        .result-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .result-title { font-weight: 600; color: #667eea; margin-bottom: 10px; }
+        .keylog-output {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #333;
+            word-break: break-all;
+            border: 1px solid #e0e0e0;
+        }
+        .solution-item {
+            background: white;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .error-box {
+            background: #fee;
+            border-left: 4px solid #f44;
+            padding: 15px;
+            border-radius: 8px;
+            color: #c33;
+            margin-top: 15px;
+        }
+        .success-box {
+            background: #efe;
+            border-left: 4px solid #4a4;
+            padding: 15px;
+            border-radius: 8px;
+            color: #363;
+            margin-top: 15px;
+        }
+        .loading { display: none; text-align: center; padding: 20px; color: #667eea; }
+        .loading.show { display: block; }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-container { width: 100%; margin: 15px 0; display: none; }
+        .progress-container.show { display: block; }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        .info-box strong { display: block; margin-bottom: 5px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #667eea;
+        }
+        table tr:hover { background: #f8f9fa; }
+        .status-success { color: #4a4; font-weight: 600; }
+        .status-error { color: #c33; font-weight: 600; }
+        #plotContainer {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            border: 2px solid #667eea;
+        }
+        #plotContainer.show { display: block; }
+        .plot-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .template-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #856404;
+        }
+        .file-stats {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+        .file-stats strong { display: block; margin-bottom: 5px; }
+        .show-more {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .show-more button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .show-more button:hover { background: #5568d3; }
+        
+        /* Toggle Preview Styles */
+        .preview-toggle {
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .preview-toggle:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .preview-toggle .icon {
+            font-size: 18px;
+        }
+        .preview-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+        .preview-content.show {
+            max-height: 2000px;
+            transition: max-height 0.4s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 Polynomial API Test - Final</h1>
+            <p>API với hỗ trợ file Excel lớn, toggle preview, chunking, progress tracking</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('manual')">📝 Nhập thủ công</div>
+            <div class="tab" onclick="switchTab('excel')">📊 Import Excel</div>
+        </div>
+        
+        <!-- Tab 1: Manual Input -->
+        <div id="tab-manual" class="tab-content active">
+            <div class="info-box">
+                <strong>💡 Hướng dẫn:</strong>
+                Nhập hệ số (LaTeX: <code>\frac{9}{4}</code>, <code>\sqrt{5}</code>, số âm: <code>-5</code>). Sau khi xử lý có thể vẽ đồ thị.
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📝 Nhập phương trình</div>
+                
+                <div class="form-group">
+                    <label for="degree">Bậc:</label>
+                    <select id="degree">
+                        <option value="Bậc 2">Bậc 2 (ax² + bx + c = 0)</option>
+                        <option value="Bậc 3">Bậc 3 (ax³ + bx² + cx + d = 0)</option>
+                        <option value="Bậc 4">Bậc 4 (ax⁴ + bx³ + cx² + dx + e = 0)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Hệ số:</label>
+                    <div id="coefficients-container" class="coefficients-grid"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="version">Version:</label>
+                    <select id="version">
+                        <option value="fx799">fx-799</option>
+                        <option value="fx800">fx-800</option>
+                        <option value="fx801">fx-801</option>
+                    </select>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="solve" checked>
+                    <label for="solve">Giải nghiệm</label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="processEquation()">🚀 Xử lý</button>
+                    <button class="btn-secondary" onclick="clearManual()">🔄 Xóa</button>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading-manual">
+                <div class="spinner"></div>
+                <p>Đang xử lý...</p>
+            </div>
+            
+            <div id="result-manual"></div>
+            
+            <div id="plotContainer">
+                <div class="section-title">📈 Đồ thị</div>
+                <div class="plot-controls">
+                    <div class="form-group">
+                        <label for="xMin">x min:</label>
+                        <input type="number" id="xMin" value="-10" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="xMax">x max:</label>
+                        <input type="number" id="xMax" value="10" step="0.5">
+                    </div>
+                </div>
+                <button class="btn-success" onclick="plotGraph()" style="width:100%;margin-bottom:15px">📊 Vẽ đồ thị</button>
+                <div id="plot" style="width:100%;height:500px"></div>
+                <div style="margin-top:10px;padding:10px;background:#f0f0f0;border-radius:6px;font-size:13px">
+                    <strong>PT:</strong> <span id="equationDisplay"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 2: Excel Import -->
+        <div id="tab-excel" class="tab-content">
+            <div class="info-box">
+                <strong>💡 Hướng dẫn:</strong>
+                Chọn bậc, tải template, nhập dữ liệu và upload. <strong>Hỗ trợ file lớn (>1000 dòng)</strong> với chunking tự động.
+            </div>
+            
+            <div class="section">
+                <div class="section-title">⚙️ Cấu hình</div>
+                
+                <div class="form-group">
+                    <label for="excelDegree">Bậc:</label>
+                    <select id="excelDegree" onchange="updateTemplateInfo()">
+                        <option value="all">Tất cả bậc (2, 3, 4)</option>
+                        <option value="Bậc 2">Chỉ Bậc 2</option>
+                        <option value="Bậc 3">Chỉ Bậc 3</option>
+                        <option value="Bậc 4">Chỉ Bậc 4</option>
+                    </select>
+                </div>
+                
+                <div class="template-info" id="templateInfo"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📤 Upload Excel</div>
+                
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-icon">📁</div>
+                    <div class="drop-zone-text">
+                        <strong>Kéo thả file Excel vào đây</strong><br>
+                        hoặc click để chọn file
+                    </div>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+                </div>
+                
+                <div class="button-group" style="margin-top:20px">
+                    <button class="btn-info" onclick="downloadTemplate()">📥 Template</button>
+                    <button class="btn-secondary" onclick="clearExcel()">🔄 Xóa</button>
+                </div>
+            </div>
+            
+            <div id="file-stats-section" style="display:none">
+                <div class="file-stats" id="fileStats"></div>
+            </div>
+            
+            <div id="preview-section" style="display:none">
+                <div class="section">
+                    <button class="preview-toggle" onclick="togglePreview()">
+                        <span class="icon" id="previewIcon">👁️</span>
+                        <span id="previewText">Hiển thị Preview</span>
+                    </button>
+                    
+                    <div class="preview-content" id="previewContent">
+                        <div id="previewTable"></div>
+                        <div class="show-more" id="showMoreBtn" style="display:none">
+                            <button onclick="showAllPreview()">Xem tất cả (<span id="remainingCount">0</span> dòng còn lại)</button>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top:15px">
+                        <button class="btn-primary" onclick="processBatch()">🚀 Xử lý hàng loạt</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading-excel">
+                <div class="spinner"></div>
+                <p>Đang xử lý batch...</p>
+            </div>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <div class="progress-info">
+                    <span id="progressText">Đang xử lý...</span>
+                    <span id="progressTime">Ước tính: --</span>
+                </div>
+                <div class="button-group" style="margin-top:10px">
+                    <button class="btn-danger" onclick="cancelProcessing()">❌ Hủy xử lý</button>
+                </div>
+            </div>
+            
+            <div id="result-excel"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:5000/api/polynomial';
+        const CHUNK_SIZE = 50;
+        const PREVIEW_LIMIT = 100;
+        
+        const degreeCoefficients = {
+            'Bậc 2': ['a', 'b', 'c'],
+            'Bậc 3': ['a', 'b', 'c', 'd'],
+            'Bậc 4': ['a', 'b', 'c', 'd', 'e']
+        };
+        
+        let currentCoefficients = null;
+        let currentDegree = null;
+        let excelData = null;
+        let batchResults = null;
+        let isProcessing = false;
+        let shouldCancel = false;
+        let showingFullPreview = false;
+        let previewVisible = false;
+        
+        document.getElementById('degree').addEventListener('change', updateCoefficients);
+        updateCoefficients();
+        updateTemplateInfo();
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            if (tabName === 'manual') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('tab-manual').classList.add('active');
+            } else {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('tab-excel').classList.add('active');
+            }
+        }
+        
+        function togglePreview() {
+            const content = document.getElementById('previewContent');
+            const icon = document.getElementById('previewIcon');
+            const text = document.getElementById('previewText');
+            
+            previewVisible = !previewVisible;
+            
+            if (previewVisible) {
+                content.classList.add('show');
+                icon.textContent = '👁️‍🗨️';
+                text.textContent = 'Ẩn Preview';
+            } else {
+                content.classList.remove('show');
+                icon.textContent = '👁️';
+                text.textContent = 'Hiển thị Preview';
+            }
+        }
+        
+        function updateTemplateInfo() {
+            const degree = document.getElementById('excelDegree').value;
+            const infoDiv = document.getElementById('templateInfo');
+            
+            const formats = {
+                'all': { title: 'Tất cả bậc', cols: '<code>STT</code>, <code>Bậc</code>, <code>a</code>, <code>b</code>, <code>c</code>, <code>d</code>, <code>e</code>, <code>Version</code>, <code>Solve</code>' },
+                'Bậc 2': { title: 'Bậc 2', cols: '<code>STT</code>, <code>a</code>, <code>b</code>, <code>c</code>, <code>Version</code>, <code>Solve</code>' },
+                'Bậc 3': { title: 'Bậc 3', cols: '<code>STT</code>, <code>a</code>, <code>b</code>, <code>c</code>, <code>d</code>, <code>Version</code>, <code>Solve</code>' },
+                'Bậc 4': { title: 'Bậc 4', cols: '<code>STT</code>, <code>a</code>, <code>b</code>, <code>c</code>, <code>d</code>, <code>e</code>, <code>Version</code>, <code>Solve</code>' }
+            };
+            
+            const info = formats[degree];
+            infoDiv.innerHTML = `<strong>📋 Format "${info.title}":</strong><div style="margin-top:8px">Cột: ${info.cols}</div>`;
+        }
+        
+        function updateCoefficients() {
+            const degree = document.getElementById('degree').value;
+            const container = document.getElementById('coefficients-container');
+            const coeffs = degreeCoefficients[degree];
+            
+            container.innerHTML = '';
+            coeffs.forEach((coeff, index) => {
+                const div = document.createElement('div');
+                div.className = 'coefficient-input';
+                div.innerHTML = `<label>Hệ số ${coeff}:</label><input type="text" id="coeff_${index}" placeholder="VD: 1, -5, \\frac{9}{4}">`;
+                container.appendChild(div);
+            });
+            
+            if (degree === 'Bậc 2') {
+                document.getElementById('coeff_0').value = '1';
+                document.getElementById('coeff_1').value = '-5';
+                document.getElementById('coeff_2').value = '6';
+            }
+        }
+        
+        async function processEquation() {
+            const degree = document.getElementById('degree').value;
+            const version = document.getElementById('version').value;
+            const solve = document.getElementById('solve').checked;
+            
+            const coeffs = degreeCoefficients[degree];
+            const coefficients = [];
+            for (let i = 0; i < coeffs.length; i++) {
+                const value = document.getElementById(`coeff_${i}`).value.trim();
+                if (!value) {
+                    showError('result-manual', `Vui lòng nhập hệ số ${coeffs[i]}`);
+                    return;
+                }
+                coefficients.push(value);
+            }
+            
+            document.getElementById('loading-manual').classList.add('show');
+            document.getElementById('result-manual').innerHTML = '';
+            document.getElementById('plotContainer').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/process`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ degree, coefficients, version, solve })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentCoefficients = coefficients;
+                    currentDegree = degree;
+                    displayManualResult(data.data);
+                    document.getElementById('plotContainer').style.display = 'block';
+                } else {
+                    showError('result-manual', data.message || 'Có lỗi xảy ra');
+                }
+            } catch (error) {
+                showError('result-manual', 'Không thể kết nối API. Kiểm tra server đang chạy tại ' + API_BASE);
+            } finally {
+                document.getElementById('loading-manual').classList.remove('show');
+            }
+        }
+        
+        function displayManualResult(data) {
+            let html = '<div class="result-box"><div class="section-title">✅ Kết quả</div>';
+            html += `<div class="result-title">Keylog:</div><div class="keylog-output">${data.keylog}</div>`;
+            html += `<div class="result-title" style="margin-top:15px">Hệ số encode:</div><div class="keylog-output">${data.encoded_coefficients.join(', ')}</div>`;
+            
+            if (data.solution) {
+                html += '<div style="margin-top:15px"><div class="result-title">Nghiệm:</div>';
+                if (data.solution.error) {
+                    html += `<div class="solution-item" style="color:#c33">Lỗi: ${data.solution.error}</div>`;
+                } else {
+                    data.solution.roots.forEach((root, i) => {
+                        html += `<div class="solution-item">x<sub>${i+1}</sub> = ${root.type === 'real' ? root.value.toFixed(6) : root.display}</div>`;
+                    });
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            document.getElementById('result-manual').innerHTML = html;
+        }
+        
+        function clearManual() {
+            const coeffs = degreeCoefficients[document.getElementById('degree').value];
+            coeffs.forEach((_, i) => document.getElementById(`coeff_${i}`).value = '');
+            document.getElementById('solve').checked = false;
+            document.getElementById('result-manual').innerHTML = '';
+            document.getElementById('plotContainer').style.display = 'none';
+            currentCoefficients = null;
+            currentDegree = null;
+        }
+        
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+        
+        function handleFile(file) {
+            if (!file.name.match(/\.(xlsx|xls)$/)) {
+                showError('result-excel', 'Chọn file Excel (.xlsx, .xls)');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    parseExcelData(workbook);
+                } catch (error) {
+                    showError('result-excel', 'Lỗi đọc Excel: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function parseExcelData(workbook) {
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(sheet);
+            
+            if (jsonData.length === 0) {
+                showError('result-excel', 'Excel không có dữ liệu');
+                return;
+            }
+            
+            const selectedDegree = document.getElementById('excelDegree').value;
+            
+            excelData = jsonData.map((row, index) => {
+                let degree = row['Bậc'] || row['Bac'] || row['Degree'];
+                if (selectedDegree !== 'all') degree = selectedDegree;
+                
+                const coeffs = [];
+                if (degree === 'Bậc 2') coeffs.push(row['a'], row['b'], row['c']);
+                else if (degree === 'Bậc 3') coeffs.push(row['a'], row['b'], row['c'], row['d']);
+                else if (degree === 'Bậc 4') coeffs.push(row['a'], row['b'], row['c'], row['d'], row['e']);
+                
+                return {
+                    index: index + 1,
+                    degree: degree,
+                    coefficients: coeffs.map(c => String(c || '0')),
+                    version: row['Version'] || 'fx799',
+                    solve: (row['Solve'] || 'No') === 'Yes'
+                };
+            });
+            
+            showFileStats(excelData.length);
+            displayPreview(excelData, false);
+            previewVisible = false;
+            document.getElementById('previewContent').classList.remove('show');
+            document.getElementById('previewIcon').textContent = '👁️';
+            document.getElementById('previewText').textContent = 'Hiển thị Preview';
+        }
+        
+        function showFileStats(total) {
+            const statsDiv = document.getElementById('fileStats');
+            const chunks = Math.ceil(total / CHUNK_SIZE);
+            const estimatedTime = Math.ceil((total * 0.5) / 60);
+            
+            statsDiv.innerHTML = `
+                <strong>📊 Thông tin file:</strong>
+                <div style="margin-top:8px">
+                    • Tổng số phương trình: <strong>${total}</strong><br>
+                    • Sẽ chia thành: <strong>${chunks} chunks</strong> (${CHUNK_SIZE} PT/chunk)<br>
+                    • Thời gian ước tính: <strong>~${estimatedTime} phút</strong>
+                </div>
+            `;
+            document.getElementById('file-stats-section').style.display = 'block';
+        }
+        
+        function displayPreview(data, showAll) {
+            const displayData = showAll ? data : data.slice(0, PREVIEW_LIMIT);
+            
+            let html = '<table><thead><tr><th>STT</th><th>Bậc</th><th>Hệ số</th><th>Ver</th><th>Solve</th></tr></thead><tbody>';
+            displayData.forEach(row => {
+                html += `<tr><td>${row.index}</td><td>${row.degree}</td><td>${row.coefficients.join(', ')}</td><td>${row.version}</td><td>${row.solve ? '✅' : '❌'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            
+            document.getElementById('previewTable').innerHTML = html;
+            document.getElementById('preview-section').style.display = 'block';
+            
+            if (data.length > PREVIEW_LIMIT && !showAll) {
+                document.getElementById('showMoreBtn').style.display = 'block';
+                document.getElementById('remainingCount').textContent = data.length - PREVIEW_LIMIT;
+            } else {
+                document.getElementById('showMoreBtn').style.display = 'none';
+            }
+            
+            showingFullPreview = showAll;
+        }
+        
+        function showAllPreview() {
+            displayPreview(excelData, true);
+            if (!previewVisible) togglePreview();
+        }
+        
+        async function processBatch() {
+            if (!excelData) {
+                showError('result-excel', 'Chưa có dữ liệu');
+                return;
+            }
+            
+            isProcessing = true;
+            shouldCancel = false;
+            
+            document.getElementById('loading-excel').classList.add('show');
+            document.getElementById('progressContainer').classList.add('show');
+            document.getElementById('result-excel').innerHTML = '';
+            
+            const equations = excelData.map(row => ({
+                degree: row.degree,
+                coefficients: row.coefficients,
+                version: row.version,
+                solve: row.solve
+            }));
+            
+            const chunks = [];
+            for (let i = 0; i < equations.length; i += CHUNK_SIZE) {
+                chunks.push(equations.slice(i, i + CHUNK_SIZE));
+            }
+            
+            let allResults = [];
+            const startTime = Date.now();
+            
+            try {
+                for (let i = 0; i < chunks.length; i++) {
+                    if (shouldCancel) {
+                        showError('result-excel', 'Đã hủy xử lý');
+                        break;
+                    }
+                    
+                    const response = await fetch(`${API_BASE}/batch`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ equations: chunks[i] })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        allResults = allResults.concat(data.data);
+                        
+                        const processed = (i + 1) * CHUNK_SIZE;
+                        const total = equations.length;
+                        const percent = Math.min(Math.round((processed / total) * 100), 100);
+                        
+                        document.getElementById('progressFill').style.width = percent + '%';
+                        document.getElementById('progressFill').textContent = percent + '%';
+                        document.getElementById('progressText').textContent = `Đã xử lý ${Math.min(processed, total)}/${total} PT`;
+                        
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        const avgTime = elapsed / (i + 1);
+                        const remaining = Math.ceil((chunks.length - i - 1) * avgTime);
+                        document.getElementById('progressTime').textContent = `Còn ~${remaining}s`;
+                    }
+                }
+                
+                if (!shouldCancel) {
+                    batchResults = allResults;
+                    displayBatchResults(allResults);
+                }
+            } catch (error) {
+                showError('result-excel', 'Lỗi kết nối API: ' + error.message);
+            } finally {
+                isProcessing = false;
+                document.getElementById('loading-excel').classList.remove('show');
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('show');
+                    document.getElementById('progressFill').style.width = '0%';
+                }, 2000);
+            }
+        }
+        
+        function cancelProcessing() {
+            if (isProcessing) {
+                shouldCancel = true;
+                document.getElementById('progressText').textContent = 'Đang hủy...';
+            }
+        }
+        
+        function displayBatchResults(results) {
+            const success = results.filter(r => r).length;
+            let html = `<div class="success-box">✅ Xử lý thành công ${success}/${results.length} PT</div>`;
+            html += '<div class="section"><div class="section-title">📋 Kết quả</div>';
+            html += '<table><thead><tr><th>STT</th><th>Bậc</th><th>Keylog</th><th>Nghiệm</th><th>Status</th></tr></thead><tbody>';
+            
+            results.forEach((result, i) => {
+                if (result) {
+                    let solutions = '-';
+                    if (result.solution && result.solution.roots) {
+                        solutions = result.solution.roots.map((r, idx) => 
+                            r.type === 'real' ? `x${idx+1}=${r.value.toFixed(3)}` : `x${idx+1}=${r.display}`
+                        ).join(', ');
+                    }
+                    
+                    html += `<tr><td>${i+1}</td><td>${result.degree}</td><td style="font-family:monospace;font-size:12px">${result.keylog}</td><td style="font-size:12px">${solutions}</td><td><span class="status-success">✅</span></td></tr>`;
+                } else {
+                    html += `<tr><td>${i+1}</td><td colspan="3">Lỗi</td><td><span class="status-error">❌</span></td></tr>`;
+                }
+            });
+            
+            html += '</tbody></table><div class="button-group" style="margin-top:20px"><button class="btn-success" onclick="exportResults()">📥 Tải Excel</button></div></div>';
+            document.getElementById('result-excel').innerHTML = html;
+        }
+        
+        function exportResults() {
+            if (!batchResults) return;
+            
+            const exportData = batchResults.map((result, i) => {
+                if (!result) return null;
+                
+                let solutions = '';
+                if (result.solution && result.solution.roots) {
+                    solutions = result.solution.roots.map((r, idx) => 
+                        r.type === 'real' ? `x${idx+1}=${r.value.toFixed(6)}` : `x${idx+1}=${r.display}`
+                    ).join(', ');
+                }
+                
+                return {
+                    'STT': i + 1,
+                    'Bậc': result.degree,
+                    'Hệ số': result.coefficients.join(', '),
+                    'Keylog': result.keylog,
+                    'Nghiệm': solutions,
+                    'Version': result.version,
+                    'Trạng thái': 'Thành công'
+                };
+            }).filter(r => r);
+            
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Kết quả");
+            XLSX.writeFile(wb, "polynomial_results.xlsx");
+        }
+        
+        function downloadTemplate() {
+            const selectedDegree = document.getElementById('excelDegree').value;
+            let template = [];
+            
+            if (selectedDegree === 'all') {
+                template = [
+                    { 'STT': 1, 'Bậc': 'Bậc 2', 'a': 1, 'b': -5, 'c': 6, 'd': '', 'e': '', 'Version': 'fx799', 'Solve': 'Yes' },
+                    { 'STT': 2, 'Bậc': 'Bậc 3', 'a': 1, 'b': -2, 'c': 0, 'd': 8, 'e': '', 'Version': 'fx799', 'Solve': 'No' },
+                    { 'STT': 3, 'Bậc': 'Bậc 4', 'a': 1, 'b': -10, 'c': 35, 'd': -50, 'e': 24, 'Version': 'fx799', 'Solve': 'Yes' }
+                ];
+            } else if (selectedDegree === 'Bậc 2') {
+                template = [
+                    { 'STT': 1, 'a': 1, 'b': -5, 'c': 6, 'Version': 'fx799', 'Solve': 'Yes' },
+                    { 'STT': 2, 'a': 2, 'b': -7, 'c': 3, 'Version': 'fx799', 'Solve': 'Yes' }
+                ];
+            } else if (selectedDegree === 'Bậc 3') {
+                template = [
+                    { 'STT': 1, 'a': 1, 'b': -2, 'c': 0, 'd': 8, 'Version': 'fx799', 'Solve': 'Yes' },
+                    { 'STT': 2, 'a': 1, 'b': 0, 'c': -1, 'd': 0, 'Version': 'fx799', 'Solve': 'No' }
+                ];
+            } else if (selectedDegree === 'Bậc 4') {
+                template = [
+                    { 'STT': 1, 'a': 1, 'b': -10, 'c': 35, 'd': -50, 'e': 24, 'Version': 'fx799', 'Solve': 'Yes' },
+                    { 'STT': 2, 'a': 1, 'b': 0, 'c': -5, 'd': 0, 'e': 4, 'Version': 'fx799', 'Solve': 'No' }
+                ];
+            }
+            
+            const ws = XLSX.utils.json_to_sheet(template);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Template");
+            
+            const filename = selectedDegree === 'all' ? 'polynomial_template_all.xlsx' : `polynomial_template_${selectedDegree.replace(' ', '_')}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+        
+        function clearExcel() {
+            excelData = null;
+            batchResults = null;
+            fileInput.value = '';
+            showingFullPreview = false;
+            previewVisible = false;
+            document.getElementById('file-stats-section').style.display = 'none';
+            document.getElementById('preview-section').style.display = 'none';
+            document.getElementById('result-excel').innerHTML = '';
+        }
+        
+        function evaluateLatex(latex) {
+            let s = String(latex).replace(/\s/g, '');
+            s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '($1)/($2)');
+            s = s.replace(/\\sqrt\{([^{}]+)\}/g, 'Math.sqrt($1)');
+            s = s.replace(/sqrt\{([^{}]+)\}/g, 'Math.sqrt($1)');
+            s = s.replace(/\{/g, '(').replace(/\}/g, ')');
+            s = s.replace(/\^/g, '**');
+            try { return eval(s); } catch { return parseFloat(latex); }
+        }
+        
+        function plotGraph() {
+            if (!currentCoefficients || !currentDegree) {
+                alert('Xử lý PT trước');
+                return;
+            }
+            
+            const xMin = parseFloat(document.getElementById('xMin').value);
+            const xMax = parseFloat(document.getElementById('xMax').value);
+            const coeffs = currentCoefficients.map(c => evaluateLatex(c));
+            
+            const xValues = [], yValues = [];
+            const step = (xMax - xMin) / 500;
+            
+            for (let i = 0; i <= 500; i++) {
+                const x = xMin + i * step;
+                let y = 0;
+                
+                if (currentDegree === 'Bậc 2') y = coeffs[0]*x**2 + coeffs[1]*x + coeffs[2];
+                else if (currentDegree === 'Bậc 3') y = coeffs[0]*x**3 + coeffs[1]*x**2 + coeffs[2]*x + coeffs[3];
+                else if (currentDegree === 'Bậc 4') y = coeffs[0]*x**4 + coeffs[1]*x**3 + coeffs[2]*x**2 + coeffs[3]*x + coeffs[4];
+                
+                xValues.push(x);
+                yValues.push(y);
+            }
+            
+            let eqText = '';
+            if (currentDegree === 'Bậc 2') eqText = `y=${coeffs[0]}x²+${coeffs[1]}x+${coeffs[2]}`;
+            else if (currentDegree === 'Bậc 3') eqText = `y=${coeffs[0]}x³+${coeffs[1]}x²+${coeffs[2]}x+${coeffs[3]}`;
+            else if (currentDegree === 'Bậc 4') eqText = `y=${coeffs[0]}x⁴+${coeffs[1]}x³+${coeffs[2]}x²+${coeffs[3]}x+${coeffs[4]}`;
+            document.getElementById('equationDisplay').textContent = eqText;
+            
+            const trace = { x: xValues, y: yValues, type: 'scatter', mode: 'lines', line: { color: '#667eea', width: 3 } };
+            const layout = {
+                title: `Đồ thị ${currentDegree}`,
+                xaxis: { title: 'x', zeroline: true, gridcolor: '#e0e0e0' },
+                yaxis: { title: 'y', zeroline: true, gridcolor: '#e0e0e0' },
+                hovermode: 'closest',
+                plot_bgcolor: '#fafafa'
+            };
+            
+            Plotly.newPlot('plot', [trace], layout, {responsive: true});
+        }
+        
+        function showError(containerId, message) {
+            document.getElementById(containerId).innerHTML = `<div class="error-box">❌ ${message}</div>`;
+        }
+    </script>
+</body>
+</html>
