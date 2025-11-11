@@ -25,10 +25,10 @@
       "description": "Minus sign"
     },
     {
-      "find": "\\\\pi",
+      "find": "\\\\/",
       "replace": "P",
       "type": "regex",
-      "description": "Pi constant"
+      "description": "divide"
     }
   ]
 }
