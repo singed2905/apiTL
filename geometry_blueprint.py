@@ -1,17 +1,17 @@
 """
 Geometry API Blueprint
-Refactored from app.py to follow Blueprint pattern
-Consistent with equation_api and polynomial_api structure
+Refactored to use GeometryService for business logic
+Follows separation of concerns pattern
 """
 
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-from geometry_api import GeometryAPI
+from geometry_service import GeometryService
 
 geometry_bp = Blueprint('geometry', __name__)
 
 # Initialize geometry service
-geometry_service = GeometryAPI()
+geometry_service = GeometryService()
 
 # ========== Metadata Endpoints ==========
 
