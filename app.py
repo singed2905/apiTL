@@ -47,7 +47,7 @@ def list_examples():
 @app.route('/')
 def home():
     endpoints = {
-        'examples': ['/examples/', '/examples/equation_test.html', '/examples/equation_excel_test.html', '/examples/web_modular.html', '/examples/web_example.html'],
+        'examples': ['/examples/', '/examples/equation_test.html', '/examples/equation_excel_test.html', '/examples/geometry_example.html'],
         'geometry': [
             '/api/geometry/shapes', '/api/geometry/operations', '/api/geometry/process', '/api/geometry/batch',
             '/api/geometry/template/<shape_a>', '/api/geometry/template/<shape_a>/<shape_b>',
