@@ -1,0 +1,28 @@
+{
+  "equations": {
+    "Bậc 2": {
+      "degree": 2,
+      "form": "ax² + bx + c = 0",
+      "coefficients": ["a", "b", "c"],
+      "required_fields": ["coef_a", "coef_b", "coef_c"],
+      "mode_code": "52",
+      "description": "Phương trình bậc 2"
+    },
+    "Bậc 3": {
+      "degree": 3,
+      "form": "ax³ + bx² + cx + d = 0",
+      "coefficients": ["a", "b", "c", "d"],
+      "required_fields": ["coef_a", "coef_b", "coef_c", "coef_d"],
+      "mode_code": "53",
+      "description": "Phương trình bậc 3"
+    },
+    "Bậc 4": {
+      "degree": 4,
+      "form": "ax⁴ + bx³ + cx² + dx + e = 0",
+      "coefficients": ["a", "b", "c", "d", "e"],
+      "required_fields": ["coef_a", "coef_b", "coef_c", "coef_d", "coef_e"],
+      "mode_code": "54",
+      "description": "Phương trình bậc 4"
+    }
+  }
+}
